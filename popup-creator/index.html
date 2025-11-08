@@ -308,20 +308,17 @@
             
             <div id="autoMode" class="input-mode">
                 <div class="input-group">
-                    <label>Enter your ArcGIS FeatureServer URL:</label>
-                    <textarea id="popupServiceUrl" rows="3" placeholder="https://services.arcgis.com/.../FeatureServer/0"></textarea>
+                    <label>Enter your ArcGIS FeatureServer URL or Item Page URL:</label>
+                    <textarea id="popupServiceUrl" rows="3" placeholder="https://services.arcgis.com/.../FeatureServer/0&#10;OR&#10;https://.../item.html?id=..."></textarea>
                     <div class="help-text">
-                        <strong>How to get the REST service URL:</strong>
-                        <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
-                            <li>If you have an ArcGIS Online item page URL (like <code>.../item.html?id=...</code>):</li>
-                            <li style="margin-left: 20px;">• Click "View" → "View in ArcGIS REST Services Directory"</li>
-                            <li style="margin-left: 20px;">• Or click the layer name to open it, then look for the REST URL</li>
-                            <li style="margin-left: 20px;">• Copy the URL that looks like: <code>.../FeatureServer/0</code> or <code>.../MapServer/0</code></li>
-                            <li>If you already have a REST URL, just paste it here (the tool will add <code>?f=json</code> automatically)</li>
-                        </ol>
-                        <p style="margin-top: 8px; font-size: 12px; color: #d32f2f;">
-                            <strong>⚠️ Note:</strong> Do NOT paste the item page URL (<code>.../item.html?id=...</code>). You need the REST service URL ending in <code>/FeatureServer/0</code> or <code>/MapServer/0</code>.
-                        </p>
+                        <strong>You can paste either:</strong>
+                        <ul style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
+                            <li><strong>REST service URL:</strong> <code>https://services.arcgis.com/.../FeatureServer/0</code></li>
+                            <li><strong>ArcGIS Online item page URL:</strong> <code>https://.../item.html?id=...</code> (we'll convert it automatically)</li>
+                        </ul>
+                        <button onclick="convertItemUrlToRest()" class="info-button secondary" style="width: auto; margin-top: 8px; padding: 8px 16px;">
+                            🔄 Convert Item Page URL to REST URL
+                        </button>
                     </div>
                 </div>
                 
@@ -593,12 +590,135 @@
             showStatus('Tool reset', 'info');
         }
         
+        async function convertItemUrlToRest() {
+            const inputUrl = document.getElementById('popupServiceUrl').value.trim();
+            
+            if (!inputUrl) {
+                showStatus('Please paste an ArcGIS Online item page URL first', 'error');
+                return;
+            }
+            
+            // Check if it's already a REST URL
+            if (inputUrl.includes('/FeatureServer/') || inputUrl.includes('/MapServer/')) {
+                showStatus('This is already a REST service URL!', 'info');
+                return;
+            }
+            
+            // Check if it's an item page URL
+            if (!inputUrl.includes('item.html?id=')) {
+                showStatus('This doesn\'t look like an ArcGIS Online item page URL. Item URLs should contain "item.html?id="', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            showStatus('Converting item page URL to REST service URL...', 'info');
+            
+            try {
+                // Extract item ID from URL
+                const itemIdMatch = inputUrl.match(/[?&]id=([^&]+)/);
+                if (!itemIdMatch) {
+                    throw new Error('Could not find item ID in URL');
+                }
+                const itemId = itemIdMatch[1];
+                
+                // Extract org ID from URL (if present) or use default
+                let orgId = 'arcgis';
+                const orgMatch = inputUrl.match(/maps\.arcgis\.com\/home/);
+                if (orgMatch) {
+                    // Try to extract org from URL pattern
+                    const orgMatch2 = inputUrl.match(/https?:\/\/([^.]+)\.maps\.arcgis\.com/);
+                    if (orgMatch2) {
+                        orgId = orgMatch2[1];
+                    }
+                }
+                
+                // Try to get item info from ArcGIS REST API
+                // First, try the item info endpoint
+                const itemInfoUrl = `https://${orgId}.maps.arcgis.com/sharing/rest/content/items/${itemId}?f=json`;
+                
+                const response = await fetch(itemInfoUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch item info: ${response.status}`);
+                }
+                
+                const itemInfo = await response.json();
+                
+                // Check if item has a URL (service URL)
+                if (itemInfo.url) {
+                    // Item has a direct service URL
+                    document.getElementById('popupServiceUrl').value = itemInfo.url;
+                    showStatus('Successfully converted to REST service URL!', 'success');
+                    showLoading(false);
+                    return;
+                }
+                
+                // If no direct URL, try to construct from item type and name
+                if (itemInfo.type === 'Feature Service' || itemInfo.type === 'Map Service') {
+                    // Try to construct REST URL from service name
+                    const serviceName = itemInfo.name || itemInfo.title;
+                    if (serviceName) {
+                        // Try common REST URL patterns
+                        const possibleUrls = [
+                            `https://services.arcgis.com/${orgId}/arcgis/rest/services/${serviceName}/FeatureServer/0`,
+                            `https://services.arcgis.com/${orgId}/arcgis/rest/services/${serviceName}/MapServer/0`,
+                            `https://services1.arcgis.com/${orgId}/arcgis/rest/services/${serviceName}/FeatureServer/0`,
+                            `https://services2.arcgis.com/${orgId}/arcgis/rest/services/${serviceName}/FeatureServer/0`,
+                        ];
+                        
+                        // Test which URL works
+                        for (const testUrl of possibleUrls) {
+                            try {
+                                const testResponse = await fetch(testUrl + '?f=json');
+                                if (testResponse.ok) {
+                                    document.getElementById('popupServiceUrl').value = testUrl;
+                                    showStatus('Successfully converted to REST service URL!', 'success');
+                                    showLoading(false);
+                                    return;
+                                }
+                            } catch (e) {
+                                // Try next URL
+                            }
+                        }
+                    }
+                }
+                
+                // If we can't auto-convert, provide instructions
+                showStatus('Could not automatically convert. Please use "View in ArcGIS REST Services Directory" from the item page.', 'error');
+                alert('Auto-conversion failed.\n\n' +
+                      'Please do this manually:\n' +
+                      '1. Go to the item page\n' +
+                      '2. Click "View" → "View in ArcGIS REST Services Directory"\n' +
+                      '3. Copy the REST URL from the address bar\n' +
+                      '4. Paste it here');
+                
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showStatus('Error converting URL: ' + error.message, 'error');
+                alert('Could not convert URL automatically.\n\n' +
+                      'Please use "View in ArcGIS REST Services Directory" from the item page to get the REST URL.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
         async function fetchPopupFields() {
-            const serviceUrl = document.getElementById('popupServiceUrl').value.trim();
+            let serviceUrl = document.getElementById('popupServiceUrl').value.trim();
             
             if (!serviceUrl) {
                 showStatus('Please enter an ArcGIS REST service URL', 'error');
                 return;
+            }
+            
+            // Check if it's an item page URL and try to convert it
+            if (serviceUrl.includes('item.html?id=') && !serviceUrl.includes('/FeatureServer/') && !serviceUrl.includes('/MapServer/')) {
+                showStatus('Detected item page URL. Attempting to convert...', 'info');
+                await convertItemUrlToRest();
+                serviceUrl = document.getElementById('popupServiceUrl').value.trim();
+                
+                // If conversion failed, return
+                if (!serviceUrl.includes('/FeatureServer/') && !serviceUrl.includes('/MapServer/')) {
+                    return;
+                }
             }
             
             // Validate that it's actually a URL, not formatted text
