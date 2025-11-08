@@ -586,6 +586,32 @@
                 return;
             }
             
+            // Validate that it's actually a URL, not formatted text
+            if (!serviceUrl.startsWith('http://') && !serviceUrl.startsWith('https://')) {
+                if (serviceUrl.includes('(type:') || serviceUrl.includes('esriFieldType')) {
+                    showStatus('Error: You pasted formatted field descriptions instead of a URL. Switch to "Manual JSON Input" tab and paste the raw JSON instead.', 'error');
+                    alert('Wrong Input Type!\n\nYou pasted formatted field descriptions into the URL field.\n\n' +
+                          'You have two options:\n\n' +
+                          'Option 1 - Use Manual JSON Input:\n' +
+                          '1. Click the "Manual JSON Input" tab\n' +
+                          '2. Go to your FeatureServer URL and add ?f=json\n' +
+                          '3. Copy the RAW JSON response\n' +
+                          '4. Paste it in the JSON textarea\n\n' +
+                          'Option 2 - Use a proper URL:\n' +
+                          '1. Enter a URL like: https://services.arcgis.com/.../FeatureServer/0\n' +
+                          '2. The tool will automatically add ?f=json');
+                    return;
+                } else {
+                    showStatus('Error: Please enter a valid URL starting with http:// or https://', 'error');
+                    return;
+                }
+            }
+            
+            // Check if it looks like an ArcGIS FeatureServer URL
+            if (!serviceUrl.includes('FeatureServer') && !serviceUrl.includes('MapServer') && !serviceUrl.includes('arcgis.com')) {
+                showStatus('Warning: This doesn\'t look like an ArcGIS REST service URL. Make sure it points to a FeatureServer or MapServer endpoint.', 'error');
+            }
+            
             // Ensure URL ends with ?f=json
             let url = serviceUrl;
             if (!url.includes('?f=json')) {
