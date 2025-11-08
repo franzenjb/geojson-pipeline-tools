@@ -310,7 +310,19 @@
                 <div class="input-group">
                     <label>Enter your ArcGIS FeatureServer URL:</label>
                     <textarea id="popupServiceUrl" rows="3" placeholder="https://services.arcgis.com/.../FeatureServer/0"></textarea>
-                    <div class="help-text">Enter the full ArcGIS REST service URL (e.g., https://services.arcgis.com/.../FeatureServer/0)</div>
+                    <div class="help-text">
+                        <strong>How to get the REST service URL:</strong>
+                        <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
+                            <li>If you have an ArcGIS Online item page URL (like <code>.../item.html?id=...</code>):</li>
+                            <li style="margin-left: 20px;">• Click "View" → "View in ArcGIS REST Services Directory"</li>
+                            <li style="margin-left: 20px;">• Or click the layer name to open it, then look for the REST URL</li>
+                            <li style="margin-left: 20px;">• Copy the URL that looks like: <code>.../FeatureServer/0</code> or <code>.../MapServer/0</code></li>
+                            <li>If you already have a REST URL, just paste it here (the tool will add <code>?f=json</code> automatically)</li>
+                        </ol>
+                        <p style="margin-top: 8px; font-size: 12px; color: #d32f2f;">
+                            <strong>⚠️ Note:</strong> Do NOT paste the item page URL (<code>.../item.html?id=...</code>). You need the REST service URL ending in <code>/FeatureServer/0</code> or <code>/MapServer/0</code>.
+                        </p>
+                    </div>
                 </div>
                 
                 <button onclick="fetchPopupFields()" class="info-button">
@@ -325,11 +337,14 @@
                     <div class="help-text">
                         <strong>How to get the JSON:</strong>
                         <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
-                            <li>Navigate to your ArcGIS FeatureServer URL in a browser</li>
-                            <li>Add <code>?f=json</code> to the end of the URL (e.g., <code>.../FeatureServer/0?f=json</code>)</li>
-                            <li>You should see <strong>raw JSON</strong> starting with <code>{"fields":[...]}</code></li>
-                            <li>Copy the <strong>entire JSON response</strong> (select all: Cmd+A / Ctrl+A, then copy)</li>
-                            <li>Paste it into the textarea above</li>
+                            <li><strong>If you have an ArcGIS Online item page</strong> (URL like <code>.../item.html?id=...</code>):</li>
+                            <li style="margin-left: 20px;">• Click "View" → "View in ArcGIS REST Services Directory"</li>
+                            <li style="margin-left: 20px;">• Or open the layer, then find the REST URL ending in <code>/FeatureServer/0</code></li>
+                            <li><strong>Then:</strong></li>
+                            <li style="margin-left: 20px;">• Add <code>?f=json</code> to the REST URL (e.g., <code>.../FeatureServer/0?f=json</code>)</li>
+                            <li style="margin-left: 20px;">• You should see <strong>raw JSON</strong> starting with <code>{"fields":[...]}</code></li>
+                            <li style="margin-left: 20px;">• Copy the <strong>entire JSON response</strong> (select all: Cmd+A / Ctrl+A, then copy)</li>
+                            <li style="margin-left: 20px;">• Paste it into the textarea above</li>
                         </ol>
                         <p style="margin-top: 8px; font-size: 12px; color: #d32f2f; font-weight: 600;">
                             <strong>⚠️ Important:</strong> Paste the RAW JSON, not formatted text! The JSON should start with <code>{"fields":</code> or <code>{"objectIdFieldName":</code>. Do NOT paste field descriptions like "Chapter (type: esriFieldTypeString)".
