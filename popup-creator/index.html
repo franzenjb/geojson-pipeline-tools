@@ -437,18 +437,29 @@
         }
         
         function parseManualJson() {
-            const jsonInput = document.getElementById('popupJsonInput').value.trim();
+            console.log('parseManualJson called');
+            const jsonInput = document.getElementById('popupJsonInput');
             
             if (!jsonInput) {
+                console.error('popupJsonInput element not found');
+                alert('Error: JSON input field not found. Please refresh the page.');
+                return;
+            }
+            
+            const jsonText = jsonInput.value.trim();
+            
+            if (!jsonText) {
                 showStatus('Please paste the JSON response from the ArcGIS REST Services Directory', 'error');
                 return;
             }
             
+            console.log('Parsing JSON, length:', jsonText.length);
             showLoading(true);
             showStatus('Parsing JSON and extracting fields...', 'info');
             
             try {
-                const data = JSON.parse(jsonInput);
+                const data = JSON.parse(jsonText);
+                console.log('JSON parsed successfully, fields:', data.fields?.length || 0);
                 
                 // Check for ArcGIS error responses
                 if (data.error) {
@@ -470,19 +481,33 @@
                 });
                 
                 // Display fields
+                console.log('Displaying fields, count:', popupFieldsData.length);
                 displayPopupFields();
-                document.getElementById('popupFieldsContainer').style.display = 'block';
-                document.getElementById('popupFieldCount').textContent = popupFieldsData.length;
+                const container = document.getElementById('popupFieldsContainer');
+                if (container) {
+                    container.style.display = 'block';
+                } else {
+                    console.error('popupFieldsContainer not found');
+                }
+                const countEl = document.getElementById('popupFieldCount');
+                if (countEl) {
+                    countEl.textContent = popupFieldsData.length;
+                } else {
+                    console.error('popupFieldCount not found');
+                }
                 
                 showStatus(`Successfully loaded ${popupFieldsData.length} fields from JSON`, 'success');
                 
             } catch (error) {
+                console.error('Parse error:', error);
                 if (error instanceof SyntaxError) {
                     showStatus('Invalid JSON format. Please check that you copied the complete JSON response correctly.', 'error');
+                    console.error('JSON Syntax Error:', error.message);
                 } else {
                     showStatus('Error parsing JSON: ' + error.message, 'error');
                 }
-                console.error('Parse error:', error);
+                // Also show alert for debugging
+                alert('Error: ' + error.message + '\n\nCheck browser console for details.');
             } finally {
                 showLoading(false);
             }
