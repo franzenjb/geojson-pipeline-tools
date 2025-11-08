@@ -327,9 +327,13 @@
                         <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
                             <li>Navigate to your ArcGIS FeatureServer URL in a browser</li>
                             <li>Add <code>?f=json</code> to the end of the URL (e.g., <code>.../FeatureServer/0?f=json</code>)</li>
-                            <li>Copy the entire JSON response</li>
+                            <li>You should see <strong>raw JSON</strong> starting with <code>{"fields":[...]}</code></li>
+                            <li>Copy the <strong>entire JSON response</strong> (select all: Cmd+A / Ctrl+A, then copy)</li>
                             <li>Paste it into the textarea above</li>
                         </ol>
+                        <p style="margin-top: 8px; font-size: 12px; color: #d32f2f; font-weight: 600;">
+                            <strong>⚠️ Important:</strong> Paste the RAW JSON, not formatted text! The JSON should start with <code>{"fields":</code> or <code>{"objectIdFieldName":</code>. Do NOT paste field descriptions like "Chapter (type: esriFieldTypeString)".
+                        </p>
                         <p style="margin-top: 8px; font-size: 12px;">
                             <strong>Note:</strong> If the service requires authentication, you'll need to use this manual method after logging into ArcGIS Online/Portal.
                         </p>
@@ -453,6 +457,14 @@
                 return;
             }
             
+            // Validate that it looks like JSON (starts with { or [)
+            const trimmedStart = jsonText.trim();
+            if (!trimmedStart.startsWith('{') && !trimmedStart.startsWith('[')) {
+                showStatus('Error: This doesn\'t look like valid JSON. Make sure you copied the raw JSON response, not formatted text. The JSON should start with { or [', 'error');
+                alert('Invalid Format!\n\nYou pasted formatted text instead of JSON.\n\nWhat you need:\n- Go to your ArcGIS FeatureServer URL\n- Add ?f=json to the end\n- Copy the RAW JSON response (it should start with {"fields":[...]})\n\nWhat you pasted looks like formatted field descriptions, not JSON.');
+                return;
+            }
+            
             console.log('Parsing JSON, length:', jsonText.length);
             showLoading(true);
             showStatus('Parsing JSON and extracting fields...', 'info');
@@ -501,13 +513,33 @@
             } catch (error) {
                 console.error('Parse error:', error);
                 if (error instanceof SyntaxError) {
-                    showStatus('Invalid JSON format. Please check that you copied the complete JSON response correctly.', 'error');
+                    const errorMsg = error.message;
+                    let helpfulMsg = 'Invalid JSON format. ';
+                    
+                    // Check for common mistakes
+                    if (errorMsg.includes('Unexpected token')) {
+                        helpfulMsg += 'It looks like you pasted formatted text instead of raw JSON. ';
+                        helpfulMsg += 'Make sure you copy the actual JSON response from the browser (it should start with {"fields":[...]}). ';
+                        helpfulMsg += 'Don\'t copy formatted field descriptions like "Chapter (type: esriFieldTypeString)".';
+                    } else {
+                        helpfulMsg += 'Please check that you copied the complete JSON response correctly.';
+                    }
+                    
+                    showStatus(helpfulMsg, 'error');
                     console.error('JSON Syntax Error:', error.message);
+                    
+                    // Show helpful alert
+                    alert('JSON Parse Error!\n\n' + helpfulMsg + '\n\n' +
+                          'How to get the correct JSON:\n' +
+                          '1. Go to: your-featureserver-url/FeatureServer/0?f=json\n' +
+                          '2. You should see raw JSON starting with {"fields":[...]}\n' +
+                          '3. Copy ALL of that JSON (Cmd+A, Cmd+C)\n' +
+                          '4. Paste it here\n\n' +
+                          'Do NOT copy formatted text or field descriptions!');
                 } else {
                     showStatus('Error parsing JSON: ' + error.message, 'error');
+                    alert('Error: ' + error.message + '\n\nCheck browser console for details.');
                 }
-                // Also show alert for debugging
-                alert('Error: ' + error.message + '\n\nCheck browser console for details.');
             } finally {
                 showLoading(false);
             }
