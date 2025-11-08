@@ -1,0 +1,19 @@
+{
+  "name": "geocoder",
+  "version": "1.0.0",
+  "description": "MapBox Geocoding Tool - Convert addresses to coordinates",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "geocoding",
+    "mapbox",
+    "address",
+    "coordinates",
+    "csv"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

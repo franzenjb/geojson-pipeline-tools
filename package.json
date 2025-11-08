@@ -1,0 +1,23 @@
+{
+  "name": "geojson-pipeline-tools",
+  "version": "1.0.0",
+  "description": "Collection of independent ArcGIS and geospatial tools",
+  "scripts": {
+    "test": "playwright test",
+    "test:popup": "playwright test popup-creator/",
+    "test:all": "playwright test"
+  },
+  "keywords": [
+    "arcgis",
+    "geojson",
+    "geospatial",
+    "gis"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "playwright": "^1.55.1"
+  }
+}
+

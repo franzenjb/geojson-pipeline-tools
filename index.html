@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoJSON Pipeline Tools</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: #C8102E;
+            margin-bottom: 50px;
+            border-bottom: 3px solid #C8102E;
+            padding-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            font-size: 18px;
+            color: #333;
+            font-weight: 400;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .tool-card {
+            background: white;
+            border-radius: 4px;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .tool-card:hover {
+            border-color: #C8102E;
+            box-shadow: 0 4px 8px rgba(200,16,46,0.15);
+        }
+        .tool-card h2 {
+            color: #C8102E;
+            margin-bottom: 15px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .tool-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .tool-card .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .status.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.coming-soon {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 GeoJSON Pipeline Tools</h1>
+            <p>Independent ArcGIS and geospatial tools, each in its own directory</p>
+        </div>
+        
+        <div class="tools-grid">
+            <a href="popup-creator/index.html" class="tool-card">
+                <div class="icon">📋</div>
+                <h2>Pop-up Creator</h2>
+                <p>Extract fields from ArcGIS Feature Services and generate styled HTML pop-up templates ready for ArcGIS Map Viewer or Experience Builder.</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <a href="geocoder/index.html" class="tool-card">
+                <div class="icon">📍</div>
+                <h2>Geocoder</h2>
+                <p>Convert addresses to coordinates using MapBox Geocoding API. Supports single address geocoding and batch CSV processing with interactive map visualization.</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <div class="tool-card" style="opacity: 0.7; cursor: not-allowed;">
+                <div class="icon">🔍</div>
+                <h2>Code Lookup</h2>
+                <p>Search Red Cross chapters, regions, divisions, and counties to find ECODE, RCODE, DCODE, and FIPS codes.</p>
+                <span class="status coming-soon">To Extract</span>
+            </div>
+            
+            <div class="tool-card" style="opacity: 0.7; cursor: not-allowed;">
+                <div class="icon">🗺️</div>
+                <h2>Create GeoJSON</h2>
+                <p>Transform CSV data into GeoJSON files at multiple geographic levels (ZIP, County, Chapter, Region, Division).</p>
+                <span class="status coming-soon">To Extract</span>
+            </div>
+            
+            <div class="tool-card" style="opacity: 0.7; cursor: not-allowed;">
+                <div class="icon">🔗</div>
+                <h2>Orgler Creator</h2>
+                <p>Convert Power BI URLs to Orgler format for embedding in Story Maps and RCView dashboards.</p>
+                <span class="status coming-soon">To Extract</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

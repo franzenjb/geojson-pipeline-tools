@@ -1,0 +1,18 @@
+{
+  "name": "popup-creator",
+  "version": "1.0.0",
+  "description": "ArcGIS pop-up template generator",
+  "main": "index.html",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "keywords": [
+    "arcgis",
+    "popup",
+    "template",
+    "generator"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

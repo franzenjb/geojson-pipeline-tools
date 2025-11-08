@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcGIS Pop-up Creator Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #C8102E;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid #8B0000;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .input-group textarea,
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .info-button {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        
+        .info-button:hover {
+            background: #8B0000;
+        }
+        
+        .info-button.success {
+            background: #10b981;
+        }
+        
+        .info-button.success:hover {
+            background: #059669;
+        }
+        
+        .info-button.primary {
+            background: #3b82f6;
+        }
+        
+        .info-button.primary:hover {
+            background: #2563eb;
+        }
+        
+        .info-button.secondary {
+            background: #003f87;
+        }
+        
+        .info-button.secondary:hover {
+            background: #002d5f;
+        }
+        
+        #popupFieldList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .field-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9fafb;
+        }
+        
+        .field-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .field-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        #popupPreview {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background: white;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        #popupOutput {
+            width: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .button-group .info-button {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .status-message {
+            display: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .loading::after {
+            content: '⏳ Loading...';
+            color: #666;
+        }
+        
+        .reset-btn {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .reset-btn:hover {
+            background: #8B0000;
+        }
+        
+        .tab-button {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px 6px 0 0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-button:hover {
+            background: #d0d0d0;
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: #C8102E;
+            border-bottom: 2px solid #C8102E;
+        }
+        
+        .input-mode {
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 ArcGIS Pop-up Creator</h1>
+        <p>Extract fields from an ArcGIS feature layer and generate styled HTML pop-up templates</p>
+    </div>
+    
+    <div class="container">
+        <div id="status" class="status-message"></div>
+        <div id="loading" class="loading"></div>
+        
+        <div class="section">
+            <h3>
+                ArcGIS FeatureServer Fields
+                <button onclick="resetTool()" class="reset-btn">Reset</button>
+            </h3>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+                <button id="tabAuto" class="tab-button active" onclick="switchInputMode('auto')">🔍 Automatic Fetch</button>
+                <button id="tabManual" class="tab-button" onclick="switchInputMode('manual')">📋 Manual JSON Input</button>
+            </div>
+            
+            <div id="autoMode" class="input-mode">
+                <div class="input-group">
+                    <label>Enter your ArcGIS FeatureServer URL:</label>
+                    <textarea id="popupServiceUrl" rows="3" placeholder="https://services.arcgis.com/.../FeatureServer/0"></textarea>
+                    <div class="help-text">Enter the full ArcGIS REST service URL (e.g., https://services.arcgis.com/.../FeatureServer/0)</div>
+                </div>
+                
+                <button onclick="fetchPopupFields()" class="info-button">
+                    🔍 Fetch Fields from Service
+                </button>
+            </div>
+            
+            <div id="manualMode" class="input-mode" style="display: none;">
+                <div class="input-group">
+                    <label>Paste JSON Response from ArcGIS REST Services Directory:</label>
+                    <textarea id="popupJsonInput" rows="12" placeholder='{"fields": [{"name": "Region", "alias": "Region", "type": "esriFieldTypeString"}, ...]}'></textarea>
+                    <div class="help-text">
+                        <strong>How to get the JSON:</strong>
+                        <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
+                            <li>Navigate to your ArcGIS FeatureServer URL in a browser</li>
+                            <li>Add <code>?f=json</code> to the end of the URL (e.g., <code>.../FeatureServer/0?f=json</code>)</li>
+                            <li>Copy the entire JSON response</li>
+                            <li>Paste it into the textarea above</li>
+                        </ol>
+                        <p style="margin-top: 8px; font-size: 12px;">
+                            <strong>Note:</strong> If the service requires authentication, you'll need to use this manual method after logging into ArcGIS Online/Portal.
+                        </p>
+                    </div>
+                </div>
+                
+                <button onclick="parseManualJson()" class="info-button">
+                    📋 Parse JSON and Load Fields
+                </button>
+            </div>
+        </div>
+        
+        <div id="popupFieldsContainer" style="display: none;" class="section">
+            <h3>📊 Available Fields (<span id="popupFieldCount">0</span>)</h3>
+            
+            <div class="input-group">
+                <input type="text" id="popupFieldFilter" placeholder="🔍 Filter fields..." 
+                       onkeyup="filterPopupFields()">
+            </div>
+            
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: white;">
+                <div id="popupFieldList"></div>
+            </div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <label>Pop-up Title:</label>
+                <input type="text" id="popupTitle" placeholder="Feature Information">
+            </div>
+            
+            <div class="input-group">
+                <label>Field Grouping (optional):</label>
+                <textarea id="popupGroups" rows="3" placeholder="Group 1: County, Region, Chapter&#10;Group 2: F2025, Grand_Total"></textarea>
+                <div class="help-text">Enter field names separated by commas. Each line creates a separate section with a horizontal rule.</div>
+            </div>
+            
+            <button onclick="generatePopupHTML()" class="info-button success">
+                ✨ Generate Pop-up HTML
+            </button>
+        </div>
+        
+        <div id="popupResult" style="display: none;" class="section">
+            <h3 style="color: #065f46;">✅ Generated Pop-up HTML</h3>
+            
+            <div class="input-group">
+                <label>Preview:</label>
+                <div id="popupPreview"></div>
+            </div>
+            
+            <div class="input-group">
+                <label>HTML Code (ready to paste into ArcGIS):</label>
+                <textarea id="popupOutput" rows="12" readonly></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="copyPopupHTML()" class="info-button success">
+                    📋 Copy HTML
+                </button>
+                <button onclick="downloadPopupHTML()" class="info-button primary">
+                    💾 Download as .html
+                </button>
+                <button onclick="downloadPopupTXT()" class="info-button secondary">
+                    📄 Download as .txt
+                </button>
+            </div>
+        </div>
+        
+        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
+            <h3 style="color: #92400e;">📖 How to Use</h3>
+            <ol style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+                <li>Enter your ArcGIS REST service URL</li>
+                <li>Click "Fetch Fields from Service" to load all available fields</li>
+                <li>Select which fields to include in your pop-up (checkboxes)</li>
+                <li>Optionally group fields into sections using the grouping field</li>
+                <li>Enter a title for your pop-up</li>
+                <li>Click "Generate Pop-up HTML" to create the template</li>
+                <li>Copy the HTML and paste it into ArcGIS Map Viewer or Experience Builder</li>
+            </ol>
+            <p style="font-size: 12px; color: #78350f; margin-top: 10px; font-style: italic;">
+                <strong>Note:</strong> The generated HTML uses inline CSS matching American Red Cross color standards (#c8102e) and Economist-style typography.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Pop-up Creator Functions
+        let popupFieldsData = [];
+        
+        function switchInputMode(mode) {
+            const autoMode = document.getElementById('autoMode');
+            const manualMode = document.getElementById('manualMode');
+            const tabAuto = document.getElementById('tabAuto');
+            const tabManual = document.getElementById('tabManual');
+            
+            if (mode === 'auto') {
+                autoMode.style.display = 'block';
+                manualMode.style.display = 'none';
+                tabAuto.classList.add('active');
+                tabManual.classList.remove('active');
+            } else {
+                autoMode.style.display = 'none';
+                manualMode.style.display = 'block';
+                tabAuto.classList.remove('active');
+                tabManual.classList.add('active');
+            }
+        }
+        
+        function parseManualJson() {
+            const jsonInput = document.getElementById('popupJsonInput').value.trim();
+            
+            if (!jsonInput) {
+                showStatus('Please paste the JSON response from the ArcGIS REST Services Directory', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            showStatus('Parsing JSON and extracting fields...', 'info');
+            
+            try {
+                const data = JSON.parse(jsonInput);
+                
+                // Check for ArcGIS error responses
+                if (data.error) {
+                    const errorMsg = data.error.message || 'Unknown error';
+                    const errorCode = data.error.code || '';
+                    throw new Error(`ArcGIS service error: ${errorMsg} (Code: ${errorCode})`);
+                }
+                
+                if (!data.fields || !Array.isArray(data.fields)) {
+                    throw new Error('Invalid JSON: fields array not found. Make sure you copied the complete JSON response from the ArcGIS REST Services Directory.');
+                }
+                
+                // Filter out system fields (OBJECTID, Shape, etc.) and geometry fields
+                const systemFields = ['OBJECTID', 'Shape', 'Shape_Length', 'Shape_Area', 'GlobalID'];
+                popupFieldsData = data.fields.filter(field => {
+                    return !systemFields.includes(field.name) && 
+                           field.type !== 'esriFieldTypeGeometry' &&
+                           field.type !== 'esriFieldTypeOID';
+                });
+                
+                // Display fields
+                displayPopupFields();
+                document.getElementById('popupFieldsContainer').style.display = 'block';
+                document.getElementById('popupFieldCount').textContent = popupFieldsData.length;
+                
+                showStatus(`Successfully loaded ${popupFieldsData.length} fields from JSON`, 'success');
+                
+            } catch (error) {
+                if (error instanceof SyntaxError) {
+                    showStatus('Invalid JSON format. Please check that you copied the complete JSON response correctly.', 'error');
+                } else {
+                    showStatus('Error parsing JSON: ' + error.message, 'error');
+                }
+                console.error('Parse error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = 'status-message ' + type;
+            status.textContent = message;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showLoading(show = true) {
+            const loading = document.getElementById('loading');
+            loading.className = show ? 'loading active' : 'loading';
+        }
+        
+        function resetTool() {
+            document.getElementById('popupServiceUrl').value = '';
+            document.getElementById('popupJsonInput').value = '';
+            document.getElementById('popupFieldsContainer').style.display = 'none';
+            document.getElementById('popupResult').style.display = 'none';
+            document.getElementById('popupFieldList').innerHTML = '';
+            document.getElementById('popupFieldCount').textContent = '0';
+            document.getElementById('popupFieldFilter').value = '';
+            document.getElementById('popupTitle').value = '';
+            document.getElementById('popupGroups').value = '';
+            document.getElementById('popupOutput').value = '';
+            document.getElementById('popupPreview').innerHTML = '';
+            popupFieldsData = [];
+            switchInputMode('auto'); // Reset to auto mode
+            showStatus('Tool reset', 'info');
+        }
+        
+        async function fetchPopupFields() {
+            const serviceUrl = document.getElementById('popupServiceUrl').value.trim();
+            
+            if (!serviceUrl) {
+                showStatus('Please enter an ArcGIS REST service URL', 'error');
+                return;
+            }
+            
+            // Ensure URL ends with ?f=json
+            let url = serviceUrl;
+            if (!url.includes('?f=json')) {
+                url = url.split('?')[0] + '?f=json';
+            }
+            
+            showLoading(true);
+            showStatus('Fetching fields from ArcGIS service...', 'info');
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Check for ArcGIS error responses (e.g., authentication required)
+                if (data.error) {
+                    const errorMsg = data.error.message || 'Unknown error';
+                    const errorCode = data.error.code || '';
+                    if (errorCode === 499 || errorMsg.includes('Token') || errorMsg.includes('authentication')) {
+                        throw new Error('This service requires authentication. Please check if the URL is publicly accessible or contact the service administrator.');
+                    }
+                    throw new Error(`ArcGIS service error: ${errorMsg} (Code: ${errorCode})`);
+                }
+                
+                if (!data.fields || !Array.isArray(data.fields)) {
+                    throw new Error('Invalid response: fields array not found. The URL may not point to a valid ArcGIS FeatureServer layer.');
+                }
+                
+                // Filter out system fields (OBJECTID, Shape, etc.) and geometry fields
+                const systemFields = ['OBJECTID', 'Shape', 'Shape_Length', 'Shape_Area', 'GlobalID'];
+                popupFieldsData = data.fields.filter(field => {
+                    return !systemFields.includes(field.name) && 
+                           field.type !== 'esriFieldTypeGeometry' &&
+                           field.type !== 'esriFieldTypeOID';
+                });
+                
+                // Display fields
+                displayPopupFields();
+                document.getElementById('popupFieldsContainer').style.display = 'block';
+                document.getElementById('popupFieldCount').textContent = popupFieldsData.length;
+                
+                showStatus(`Successfully loaded ${popupFieldsData.length} fields`, 'success');
+                
+            } catch (error) {
+                showStatus('Error fetching fields: ' + error.message, 'error');
+                console.error('Fetch error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function displayPopupFields(filterText = '') {
+            const fieldList = document.getElementById('popupFieldList');
+            fieldList.innerHTML = '';
+            
+            const filter = filterText.toLowerCase();
+            const filteredFields = popupFieldsData.filter(field => {
+                if (!filter) return true;
+                const name = (field.name || '').toLowerCase();
+                const alias = (field.alias || '').toLowerCase();
+                return name.includes(filter) || alias.includes(filter);
+            });
+            
+            filteredFields.forEach(field => {
+                const fieldName = field.name;
+                const fieldAlias = field.alias || fieldName;
+                const fieldType = field.type || 'Unknown';
+                
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'field-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `popup_field_${fieldName}`;
+                checkbox.value = fieldName;
+                checkbox.checked = true; // Default to checked
+                
+                const label = document.createElement('label');
+                label.htmlFor = `popup_field_${fieldName}`;
+                label.innerHTML = `<strong>${fieldAlias}</strong><br><span style="color: #666; font-size: 10px;">${fieldName} (${fieldType.replace('esriFieldType', '')})</span>`;
+                
+                fieldDiv.appendChild(checkbox);
+                fieldDiv.appendChild(label);
+                fieldList.appendChild(fieldDiv);
+            });
+            
+            document.getElementById('popupFieldCount').textContent = `${filteredFields.length} of ${popupFieldsData.length}`;
+        }
+        
+        function filterPopupFields() {
+            const filterText = document.getElementById('popupFieldFilter').value;
+            displayPopupFields(filterText);
+        }
+        
+        function generatePopupHTML() {
+            // Get selected fields
+            const checkboxes = document.querySelectorAll('#popupFieldList input[type="checkbox"]:checked');
+            const selectedFields = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedFields.length === 0) {
+                showStatus('Please select at least one field', 'error');
+                return;
+            }
+            
+            // Get field metadata for selected fields
+            const selectedFieldsData = popupFieldsData.filter(f => selectedFields.includes(f.name));
+            
+            // Get title
+            const title = document.getElementById('popupTitle').value.trim() || 'Feature Information';
+            
+            // Get grouping
+            const groupsText = document.getElementById('popupGroups').value.trim();
+            let groups = [];
+            if (groupsText) {
+                groups = groupsText.split('\n').map(line => {
+                    const fields = line.split(':')[1] || line;
+                    return fields.split(',').map(f => f.trim()).filter(f => f);
+                }).filter(group => group.length > 0);
+            }
+            
+            // Generate HTML
+            let html = '<div style="background-color:#fff;border-radius:10px;border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,0.1);padding:10px;font-family:\'Arial\',sans-serif;color:#333;font-size:13px;line-height:1.4;">\n';
+            html += `  <h3 style="color:#c8102e;margin-top:0;font-size:16px;font-weight:bold;margin-bottom:12px;">${escapeHtml(title)}</h3>\n`;
+            
+            if (groups.length > 0) {
+                // Use grouping
+                let usedFields = new Set();
+                
+                groups.forEach((group, groupIndex) => {
+                    const groupFields = group.filter(f => selectedFields.includes(f));
+                    if (groupFields.length > 0) {
+                        groupFields.forEach(fieldName => {
+                            const field = selectedFieldsData.find(f => f.name === fieldName);
+                            if (field) {
+                                const alias = field.alias || fieldName;
+                                html += `  <p style="margin:6px 0;"><b>${escapeHtml(alias)}:</b> {${fieldName}}</p>\n`;
+                                usedFields.add(fieldName);
+                            }
+                        });
+                        
+                        // Add horizontal rule between groups (except after last group)
+                        if (groupIndex < groups.length - 1) {
+                            html += '  <hr style="border:none;border-top:1px solid #ddd;margin:8px 0;">\n';
+                        }
+                    }
+                });
+                
+                // Add remaining fields that weren't in groups
+                const remainingFields = selectedFieldsData.filter(f => !usedFields.has(f.name));
+                if (remainingFields.length > 0) {
+                    if (groups.length > 0) {
+                        html += '  <hr style="border:none;border-top:1px solid #ddd;margin:8px 0;">\n';
+                    }
+                    remainingFields.forEach(field => {
+                        const alias = field.alias || field.name;
+                        html += `  <p style="margin:6px 0;"><b>${escapeHtml(alias)}:</b> {${field.name}}</p>\n`;
+                    });
+                }
+            } else {
+                // No grouping - just list all fields
+                selectedFieldsData.forEach((field, index) => {
+                    const alias = field.alias || field.name;
+                    html += `  <p style="margin:6px 0;"><b>${escapeHtml(alias)}:</b> {${field.name}}</p>\n`;
+                });
+            }
+            
+            html += '</div>';
+            
+            // Display result
+            document.getElementById('popupOutput').value = html;
+            document.getElementById('popupPreview').innerHTML = html.replace(/\{([^}]+)\}/g, '<span style="color:#c8102e;font-weight:bold;">{$1}</span>');
+            document.getElementById('popupResult').style.display = 'block';
+            
+            showStatus('Pop-up HTML generated successfully!', 'success');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function copyPopupHTML() {
+            const output = document.getElementById('popupOutput');
+            output.select();
+            output.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showStatus('HTML copied to clipboard!', 'success');
+            } catch (err) {
+                navigator.clipboard.writeText(output.value).then(() => {
+                    showStatus('HTML copied to clipboard!', 'success');
+                }).catch(() => {
+                    showStatus('Failed to copy. Please select and copy manually.', 'error');
+                });
+            }
+        }
+        
+        function downloadPopupHTML() {
+            const html = document.getElementById('popupOutput').value;
+            if (!html) {
+                showStatus('No HTML to download. Please generate pop-up HTML first.', 'error');
+                return;
+            }
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arcgis-popup-template.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('HTML file downloaded!', 'success');
+        }
+        
+        function downloadPopupTXT() {
+            const html = document.getElementById('popupOutput').value;
+            if (!html) {
+                showStatus('No HTML to download. Please generate pop-up HTML first.', 'error');
+                return;
+            }
+            
+            const blob = new Blob([html], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arcgis-popup-template.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('Text file downloaded!', 'success');
+        }
+    </script>
+</body>
+</html>
+
