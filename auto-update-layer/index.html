@@ -8,6 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Georgia', 'Times New Roman', serif; background: #ffffff; color: #333; line-height: 1.6; }
         .header { background: #C8102E; color: white; padding: 30px 20px; text-align: center; border-bottom: 3px solid #8B0000; }
+        .back-link { display: inline-block; color: white; text-decoration: none; font-size: 14px; margin-bottom: 15px; opacity: 0.9; transition: opacity 0.2s; }
+        .back-link:hover { opacity: 1; text-decoration: underline; }
         .header h1 { font-size: 28px; margin-bottom: 10px; }
         .header p { font-size: 14px; opacity: 0.9; }
         .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
@@ -64,6 +66,7 @@
 </head>
 <body>
     <div class="header">
+        <a href="../index.html" class="back-link">← Back to All Tools</a>
         <h1>🤖 Auto-Update Layer</h1>
         <p>Automatically update ArcGIS Feature Layers with new data</p>
     </div>

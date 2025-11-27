@@ -22,12 +22,27 @@
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
         .header h1 {
             font-size: 28px;
             margin-bottom: 10px;
         }
-        
+
         .header p {
             font-size: 14px;
             opacity: 0.9;
@@ -270,6 +285,7 @@
 </head>
 <body>
     <div class="header">
+        <a href="../index.html" class="back-link">← Back to All Tools</a>
         <h1>📍 MapBox Geocoding Tool</h1>
         <p>Convert addresses to coordinates using MapBox Geocoding API</p>
     </div>
