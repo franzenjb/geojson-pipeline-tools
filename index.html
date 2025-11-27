@@ -13,7 +13,7 @@
             padding: 40px 20px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         .header {
@@ -36,14 +36,14 @@
         }
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
             margin-top: 40px;
         }
         .tool-card {
             background: white;
             border-radius: 4px;
-            padding: 30px;
+            padding: 25px;
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             transition: all 0.2s;
@@ -57,34 +57,45 @@
         }
         .tool-card h2 {
             color: #C8102E;
-            margin-bottom: 15px;
-            font-size: 24px;
+            margin-bottom: 12px;
+            font-size: 20px;
             font-weight: 700;
         }
         .tool-card p {
             color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
         .tool-card .status {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            margin-top: 10px;
+            text-transform: uppercase;
         }
         .status.ready {
             background: #d1fae5;
             color: #065f46;
         }
-        .status.coming-soon {
+        .status.beta {
             background: #fef3c7;
             color: #92400e;
         }
         .icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+        .tool-number {
+            font-size: 11px;
+            color: #999;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .tool-card {
+            position: relative;
         }
     </style>
 </head>
@@ -92,32 +103,28 @@
     <div class="container">
         <div class="header">
             <h1>🌐 GeoJSON Pipeline Tools</h1>
-            <p>Independent ArcGIS and geospatial tools, each in its own directory</p>
+            <p>10 independent ArcGIS and geospatial tools for Red Cross operations</p>
         </div>
-        
+
         <div class="tools-grid">
-            <a href="popup-creator/index.html" class="tool-card">
-                <div class="icon">📋</div>
-                <h2>Pop-up Creator</h2>
-                <p>Extract fields from ArcGIS Feature Services and generate styled HTML pop-up templates ready for ArcGIS Map Viewer or Experience Builder.</p>
-                <span class="status ready">Ready</span>
-            </a>
-            
-            <a href="geocoder/index.html" class="tool-card">
-                <div class="icon">📍</div>
-                <h2>Geocoder</h2>
-                <p>Convert addresses to coordinates using MapBox Geocoding API. Supports single address geocoding and batch CSV processing with interactive map visualization.</p>
-                <span class="status ready">Ready</span>
-            </a>
-            
             <a href="code-lookup/index.html" class="tool-card">
+                <span class="tool-number">1</span>
                 <div class="icon">🔍</div>
-                <h2>Code Lookup</h2>
-                <p>Search Red Cross chapters, regions, divisions, and counties to find ECODE, RCODE, DCODE, and FIPS codes.</p>
+                <h2>Code Lookup Tool</h2>
+                <p>Search 33,000+ ZIP codes to find Red Cross chapter, region, division codes (ECODE, RCODE, DCODE) and county FIPS codes.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="data-enrichment/index.html" class="tool-card">
+                <span class="tool-number">2</span>
+                <div class="icon">📊</div>
+                <h2>Data Enrichment</h2>
+                <p>Enrich CSV files with Red Cross organizational codes by matching ZIP codes to chapters, regions, and divisions.</p>
                 <span class="status ready">Ready</span>
             </a>
 
             <a href="create-geojson/index.html" class="tool-card">
+                <span class="tool-number">3</span>
                 <div class="icon">🗺️</div>
                 <h2>Create GeoJSON</h2>
                 <p>Transform CSV data into GeoJSON files at multiple geographic levels (ZIP, County, Chapter, Region, Division).</p>
@@ -125,13 +132,61 @@
             </a>
 
             <a href="orgler-creator/index.html" class="tool-card">
+                <span class="tool-number">4</span>
                 <div class="icon">🔗</div>
-                <h2>Orgler Creator</h2>
-                <p>Convert Power BI URLs to Orgler format for embedding in Story Maps and RCView dashboards.</p>
+                <h2>Orgler URL</h2>
+                <p>Convert Power BI URLs to Orgler format for embedding in Story Maps, RCView dashboards, and web applications.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="popup-creator/index.html" class="tool-card">
+                <span class="tool-number">5</span>
+                <div class="icon">📋</div>
+                <h2>Pop-up Creator</h2>
+                <p>Extract fields from ArcGIS Feature Services and generate styled HTML pop-up templates for Map Viewer or Experience Builder.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="geocoder/index.html" class="tool-card">
+                <span class="tool-number">6</span>
+                <div class="icon">🌐</div>
+                <h2>Geocoder</h2>
+                <p>Convert addresses to coordinates using MapBox Geocoding API. Supports single and batch CSV processing with map visualization.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="metadata/index.html" class="tool-card">
+                <span class="tool-number">7</span>
+                <div class="icon">📋</div>
+                <h2>Metadata BETA</h2>
+                <p>Extract and display comprehensive metadata from ArcGIS REST services including fields, capabilities, and extent information.</p>
+                <span class="status beta">Beta</span>
+            </a>
+
+            <a href="oauth-tokens/index.html" class="tool-card">
+                <span class="tool-number">8</span>
+                <div class="icon">🔐</div>
+                <h2>OAuth Tokens</h2>
+                <p>Generate ArcGIS OAuth 2.0 access tokens for API authentication using client credentials or application credentials.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="hi-res-captures/index.html" class="tool-card">
+                <span class="tool-number">9</span>
+                <div class="icon">📸</div>
+                <h2>Hi-Res Captures</h2>
+                <p>Export high-resolution images from ArcGIS MapServer and ImageServer services at various sizes and DPI settings.</p>
+                <span class="status ready">Ready</span>
+            </a>
+
+            <a href="auto-update-layer/index.html" class="tool-card">
+                <span class="tool-number">10</span>
+                <div class="icon">🤖</div>
+                <h2>Auto-Update Layer</h2>
+                <p>Automatically update ArcGIS Feature Layers with new data. Supports append, overwrite, update, and upsert operations.</p>
                 <span class="status ready">Ready</span>
             </a>
         </div>
     </div>
 </body>
 </html>
-

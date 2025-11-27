@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Token Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', 'Times New Roman', serif; background: #ffffff; color: #333; line-height: 1.6; }
+        .header { background: #C8102E; color: white; padding: 30px 20px; text-align: center; border-bottom: 3px solid #8B0000; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+        .section { background: white; border-radius: 4px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .section h3 { color: #333; margin-bottom: 15px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #C8102E; box-shadow: 0 0 0 2px rgba(200,16,46,0.1); }
+        .help-text { font-size: 12px; color: #666; margin-top: 5px; }
+        .info-button { background: #C8102E; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+        .info-button:hover { background: #8B0000; }
+        .info-button.success { background: #10b981; }
+        .info-button.secondary { background: #003f87; }
+        .reset-btn { background: #C8102E; color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .token-display { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; word-break: break-all; margin: 15px 0; position: relative; }
+        .token-display .label { color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; }
+        .token-display .value { color: #4ade80; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .copy-btn:hover { background: #475569; }
+        .warning-box { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+        .warning-box h4 { color: #92400e; margin-bottom: 8px; }
+        .warning-box p { color: #78350f; font-size: 13px; }
+        .status-message { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; display: none; }
+        .status-message.info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+        .status-message.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+        .status-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+        .hidden { display: none !important; }
+        .expiry-info { display: flex; gap: 20px; margin-top: 15px; }
+        .expiry-item { flex: 1; background: #f9fafb; padding: 15px; border-radius: 6px; text-align: center; }
+        .expiry-item .value { font-size: 24px; font-weight: 700; color: #C8102E; }
+        .expiry-item .label { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 OAuth Token Generator</h1>
+        <p>Generate ArcGIS OAuth tokens for API access</p>
+    </div>
+    <div class="container">
+        <div class="warning-box">
+            <h4>⚠️ Security Notice</h4>
+            <p>OAuth credentials should be kept secure. Never share your Client ID and Client Secret publicly. Tokens generated here are stored only in your browser's memory and are not sent to any external servers.</p>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="section">
+            <h3>🔑 Credentials <button onclick="resetTool()" class="reset-btn">Reset</button></h3>
+
+            <div class="input-group">
+                <label>Portal URL:</label>
+                <select id="portalUrl">
+                    <option value="https://www.arcgis.com">ArcGIS Online (arcgis.com)</option>
+                    <option value="https://arcgis.redcross.org">Red Cross Portal (arcgis.redcross.org)</option>
+                    <option value="custom">Custom Portal...</option>
+                </select>
+            </div>
+
+            <div class="input-group hidden" id="customPortalGroup">
+                <label>Custom Portal URL:</label>
+                <input type="text" id="customPortalUrl" placeholder="https://your-portal.domain.com">
+            </div>
+
+            <div class="input-group">
+                <label>Client ID (App ID):</label>
+                <input type="text" id="clientId" placeholder="Enter your Client ID">
+                <p class="help-text">Found in your ArcGIS Developer account under App credentials</p>
+            </div>
+
+            <div class="input-group">
+                <label>Client Secret:</label>
+                <input type="password" id="clientSecret" placeholder="Enter your Client Secret">
+                <p class="help-text">Keep this secret! Never share or expose in client-side code.</p>
+            </div>
+
+            <div class="input-group">
+                <label>Token Expiration (minutes):</label>
+                <select id="expiration">
+                    <option value="60">1 hour</option>
+                    <option value="120">2 hours</option>
+                    <option value="480">8 hours</option>
+                    <option value="1440" selected>24 hours</option>
+                    <option value="10080">7 days</option>
+                    <option value="20160">14 days</option>
+                </select>
+            </div>
+
+            <button onclick="generateToken()" class="info-button">🔐 Generate Token</button>
+        </div>
+
+        <div class="section hidden" id="tokenSection">
+            <h3>✅ Generated Token</h3>
+
+            <div class="token-display">
+                <div class="label">Access Token</div>
+                <div class="value" id="tokenValue"></div>
+                <button class="copy-btn" onclick="copyToken()">📋 Copy</button>
+            </div>
+
+            <div class="expiry-info">
+                <div class="expiry-item">
+                    <div class="value" id="expiresIn">-</div>
+                    <div class="label">Expires In</div>
+                </div>
+                <div class="expiry-item">
+                    <div class="value" id="expiresAt">-</div>
+                    <div class="label">Expires At</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button onclick="testToken()" class="info-button secondary">🧪 Test Token</button>
+            </div>
+        </div>
+
+        <div class="section" style="background: #f0f9ff; border: 1px solid #bae6fd;">
+            <h3 style="color: #0369a1;">📖 How to Get Credentials</h3>
+            <ol style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #0c4a6e;">
+                <li>Go to <a href="https://developers.arcgis.com" target="_blank">developers.arcgis.com</a></li>
+                <li>Sign in with your ArcGIS account</li>
+                <li>Create a new application or select an existing one</li>
+                <li>Under "App Credentials", find your Client ID and Client Secret</li>
+                <li>Copy and paste them into the fields above</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        document.getElementById('portalUrl').addEventListener('change', function() {
+            document.getElementById('customPortalGroup').classList.toggle('hidden', this.value !== 'custom');
+        });
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+        }
+
+        function resetTool() {
+            document.getElementById('clientId').value = '';
+            document.getElementById('clientSecret').value = '';
+            document.getElementById('customPortalUrl').value = '';
+            document.getElementById('tokenSection').classList.add('hidden');
+            document.getElementById('statusMessage').className = 'status-message';
+            currentToken = null;
+        }
+
+        async function generateToken() {
+            const portalSelect = document.getElementById('portalUrl');
+            let portalUrl = portalSelect.value;
+
+            if (portalUrl === 'custom') {
+                portalUrl = document.getElementById('customPortalUrl').value.trim();
+                if (!portalUrl) {
+                    showStatus('Please enter a custom portal URL', 'error');
+                    return;
+                }
+            }
+
+            const clientId = document.getElementById('clientId').value.trim();
+            const clientSecret = document.getElementById('clientSecret').value.trim();
+            const expiration = document.getElementById('expiration').value;
+
+            if (!clientId || !clientSecret) {
+                showStatus('Please enter both Client ID and Client Secret', 'error');
+                return;
+            }
+
+            showStatus('Generating token...', 'info');
+
+            try {
+                const tokenUrl = `${portalUrl}/sharing/rest/oauth2/token`;
+                const params = new URLSearchParams({
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    grant_type: 'client_credentials',
+                    expiration: expiration
+                });
+
+                const response = await fetch(tokenUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message || data.error.error || 'Token generation failed');
+                }
+
+                if (!data.access_token) {
+                    throw new Error('No access token in response');
+                }
+
+                currentToken = data;
+                displayToken(data, expiration);
+                showStatus('Token generated successfully!', 'success');
+
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+            }
+        }
+
+        function displayToken(data, expirationMinutes) {
+            document.getElementById('tokenValue').textContent = data.access_token;
+            document.getElementById('tokenSection').classList.remove('hidden');
+
+            // Calculate expiry
+            const expiresInMs = data.expires_in ? data.expires_in * 1000 : expirationMinutes * 60 * 1000;
+            const expiresAt = new Date(Date.now() + expiresInMs);
+
+            document.getElementById('expiresIn').textContent = formatDuration(expiresInMs);
+            document.getElementById('expiresAt').textContent = expiresAt.toLocaleString();
+        }
+
+        function formatDuration(ms) {
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (hours > 24) {
+                const days = Math.floor(hours / 24);
+                return `${days}d ${hours % 24}h`;
+            }
+            return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+        }
+
+        function copyToken() {
+            if (!currentToken) return;
+            navigator.clipboard.writeText(currentToken.access_token).then(() => {
+                showStatus('Token copied to clipboard!', 'success');
+            });
+        }
+
+        async function testToken() {
+            if (!currentToken) return;
+
+            showStatus('Testing token...', 'info');
+
+            try {
+                const portalSelect = document.getElementById('portalUrl');
+                let portalUrl = portalSelect.value;
+                if (portalUrl === 'custom') {
+                    portalUrl = document.getElementById('customPortalUrl').value.trim();
+                }
+
+                const selfUrl = `${portalUrl}/sharing/rest/portals/self?f=json&token=${currentToken.access_token}`;
+                const response = await fetch(selfUrl);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message || 'Token validation failed');
+                }
+
+                showStatus(`Token valid! Authenticated as: ${data.name || data.user?.username || 'Unknown'}`, 'success');
+
+            } catch (error) {
+                showStatus('Token test failed: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

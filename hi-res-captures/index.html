@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Res Map Captures</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', 'Times New Roman', serif; background: #ffffff; color: #333; line-height: 1.6; }
+        .header { background: #C8102E; color: white; padding: 30px 20px; text-align: center; border-bottom: 3px solid #8B0000; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .section { background: white; border-radius: 4px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .section h3 { color: #333; margin-bottom: 15px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #C8102E; box-shadow: 0 0 0 2px rgba(200,16,46,0.1); }
+        .help-text { font-size: 12px; color: #666; margin-top: 5px; }
+        .info-button { background: #C8102E; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+        .info-button:hover { background: #8B0000; }
+        .info-button.success { background: #10b981; }
+        .info-button.secondary { background: #003f87; }
+        .reset-btn { background: #C8102E; color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .size-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .size-card { border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .size-card:hover { border-color: #C8102E; background: #fef7f7; }
+        .size-card.selected { border-color: #C8102E; background: #fef7f7; box-shadow: 0 0 0 3px rgba(200,16,46,0.1); }
+        .size-card .dimensions { font-size: 20px; font-weight: 700; color: #C8102E; }
+        .size-card .label { font-size: 12px; color: #666; }
+        .preview-container { background: #1e293b; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .preview-container h4 { color: white; margin-bottom: 15px; }
+        .preview-frame { width: 100%; background: #0f172a; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; min-height: 300px; }
+        .preview-frame img { max-width: 100%; max-height: 500px; border-radius: 4px; }
+        .status-message { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; display: none; }
+        .status-message.info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+        .status-message.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+        .status-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+        .hidden { display: none !important; }
+        .export-url { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-top: 15px; font-family: 'Courier New', monospace; font-size: 12px; word-break: break-all; }
+        .button-group { display: flex; gap: 10px; margin-top: 15px; }
+        .button-group button { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📸 Hi-Res Map Captures</h1>
+        <p>Export high-resolution images from ArcGIS maps and services</p>
+    </div>
+    <div class="container">
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="section">
+            <h3>🗺️ Map Service URL <button onclick="resetTool()" class="reset-btn">Reset</button></h3>
+            <div class="input-group">
+                <label>Enter ArcGIS MapServer or ImageServer URL:</label>
+                <input type="text" id="serviceUrl" placeholder="https://services.arcgis.com/.../MapServer">
+                <p class="help-text">Supports MapServer, ImageServer, and Web Map export endpoints</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📐 Export Settings</h3>
+
+            <div class="input-group">
+                <label>Output Size:</label>
+                <div class="size-cards">
+                    <div class="size-card" onclick="selectSize(1920, 1080)" data-size="1920x1080">
+                        <div class="dimensions">1920×1080</div>
+                        <div class="label">Full HD</div>
+                    </div>
+                    <div class="size-card selected" onclick="selectSize(2560, 1440)" data-size="2560x1440">
+                        <div class="dimensions">2560×1440</div>
+                        <div class="label">2K / QHD</div>
+                    </div>
+                    <div class="size-card" onclick="selectSize(3840, 2160)" data-size="3840x2160">
+                        <div class="dimensions">3840×2160</div>
+                        <div class="label">4K / UHD</div>
+                    </div>
+                    <div class="size-card" onclick="selectSize(4096, 4096)" data-size="4096x4096">
+                        <div class="dimensions">4096×4096</div>
+                        <div class="label">Square 4K</div>
+                    </div>
+                    <div class="size-card" onclick="selectSize(0, 0)" data-size="custom">
+                        <div class="dimensions">Custom</div>
+                        <div class="label">Enter below</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-grid hidden" id="customSizeGroup">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Width (px):</label>
+                    <input type="number" id="customWidth" value="2560" min="100" max="8192">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Height (px):</label>
+                    <input type="number" id="customHeight" value="1440" min="100" max="8192">
+                </div>
+            </div>
+
+            <div class="options-grid">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Format:</label>
+                    <select id="format">
+                        <option value="png">PNG (lossless)</option>
+                        <option value="png32">PNG32 (with alpha)</option>
+                        <option value="jpg">JPEG (smaller file)</option>
+                        <option value="gif">GIF</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>DPI:</label>
+                    <select id="dpi">
+                        <option value="96">96 (screen)</option>
+                        <option value="150">150</option>
+                        <option value="300" selected>300 (print)</option>
+                        <option value="600">600 (high quality)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Bounding Box (optional):</label>
+                <input type="text" id="bbox" placeholder="-125,24,-65,50 (xmin,ymin,xmax,ymax in WGS84)">
+                <p class="help-text">Leave empty to use service default extent. Format: xmin,ymin,xmax,ymax</p>
+            </div>
+
+            <div class="input-group">
+                <label>Layers (optional):</label>
+                <input type="text" id="layers" placeholder="show:0,1,2 or hide:3,4">
+                <p class="help-text">Control layer visibility. Examples: show:0,1 | hide:2 | include:0 | exclude:1</p>
+            </div>
+
+            <button onclick="generateExport()" class="info-button">📸 Generate Export URL</button>
+        </div>
+
+        <div class="section hidden" id="resultsSection">
+            <h3>✅ Export Ready</h3>
+
+            <div class="export-url" id="exportUrl"></div>
+
+            <div class="button-group">
+                <button onclick="copyUrl()" class="info-button secondary">📋 Copy URL</button>
+                <button onclick="openImage()" class="info-button success">🔗 Open in New Tab</button>
+                <button onclick="downloadImage()" class="info-button">💾 Download</button>
+            </div>
+
+            <div class="preview-container">
+                <h4>Preview</h4>
+                <div class="preview-frame" id="previewFrame">
+                    <span>Click "Open in New Tab" or "Download" to see the image</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
+            <h3 style="color: #92400e;">📖 Tips</h3>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+                <li>Higher resolutions may take longer to generate</li>
+                <li>Use PNG for maps with transparency or text</li>
+                <li>Use JPEG for satellite imagery or photos</li>
+                <li>300 DPI is recommended for print materials</li>
+                <li>Some services have maximum export size limits</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let selectedWidth = 2560;
+        let selectedHeight = 1440;
+        let exportUrl = '';
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+        }
+
+        function resetTool() {
+            document.getElementById('serviceUrl').value = '';
+            document.getElementById('bbox').value = '';
+            document.getElementById('layers').value = '';
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('statusMessage').className = 'status-message';
+            exportUrl = '';
+        }
+
+        function selectSize(width, height) {
+            document.querySelectorAll('.size-card').forEach(card => card.classList.remove('selected'));
+
+            if (width === 0) {
+                event.target.closest('.size-card').classList.add('selected');
+                document.getElementById('customSizeGroup').classList.remove('hidden');
+            } else {
+                document.querySelector(`.size-card[data-size="${width}x${height}"]`).classList.add('selected');
+                document.getElementById('customSizeGroup').classList.add('hidden');
+                selectedWidth = width;
+                selectedHeight = height;
+            }
+        }
+
+        function generateExport() {
+            let serviceUrl = document.getElementById('serviceUrl').value.trim();
+            if (!serviceUrl) {
+                showStatus('Please enter a service URL', 'error');
+                return;
+            }
+
+            // Get settings
+            const customSelected = document.querySelector('.size-card[data-size="custom"]').classList.contains('selected');
+            const width = customSelected ? document.getElementById('customWidth').value : selectedWidth;
+            const height = customSelected ? document.getElementById('customHeight').value : selectedHeight;
+            const format = document.getElementById('format').value;
+            const dpi = document.getElementById('dpi').value;
+            const bbox = document.getElementById('bbox').value.trim();
+            const layers = document.getElementById('layers').value.trim();
+
+            // Build export URL
+            const baseUrl = serviceUrl.replace(/\/$/, '');
+            const exportEndpoint = baseUrl.includes('/export') ? baseUrl : baseUrl + '/export';
+
+            const params = new URLSearchParams({
+                f: 'image',
+                format: format,
+                size: `${width},${height}`,
+                dpi: dpi,
+                transparent: 'true'
+            });
+
+            if (bbox) {
+                params.set('bbox', bbox);
+                params.set('bboxSR', '4326');
+                params.set('imageSR', '4326');
+            }
+
+            if (layers) {
+                params.set('layers', layers);
+            }
+
+            exportUrl = exportEndpoint + '?' + params.toString();
+
+            document.getElementById('exportUrl').textContent = exportUrl;
+            document.getElementById('resultsSection').classList.remove('hidden');
+            showStatus('Export URL generated!', 'success');
+        }
+
+        function copyUrl() {
+            navigator.clipboard.writeText(exportUrl).then(() => {
+                showStatus('URL copied to clipboard!', 'success');
+            });
+        }
+
+        function openImage() {
+            window.open(exportUrl, '_blank');
+        }
+
+        function downloadImage() {
+            const format = document.getElementById('format').value;
+            const a = document.createElement('a');
+            a.href = exportUrl;
+            a.download = `map_export_${Date.now()}.${format === 'jpg' ? 'jpg' : format}`;
+            a.target = '_blank';
+            a.click();
+            showStatus('Download started...', 'info');
+        }
+    </script>
+</body>
+</html>
