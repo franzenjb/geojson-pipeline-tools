@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orgler Creator - Power BI Embed Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #C8102E;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid #8B0000;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input[type="text"],
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-group textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #C8102E;
+            box-shadow: 0 0 0 2px rgba(200,16,46,0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .info-button {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .info-button:hover {
+            background: #8B0000;
+        }
+
+        .info-button.success {
+            background: #10b981;
+        }
+
+        .info-button.success:hover {
+            background: #059669;
+        }
+
+        .info-button.secondary {
+            background: #003f87;
+        }
+
+        .info-button.secondary:hover {
+            background: #002d5f;
+        }
+
+        .reset-btn {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background: #8B0000;
+        }
+
+        .output-format {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .output-format h4 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .output-format .badge {
+            background: #C8102E;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .output-format .badge.story-map {
+            background: #003f87;
+        }
+
+        .output-format .badge.rcview {
+            background: #065f46;
+        }
+
+        .output-format .badge.iframe {
+            background: #6b21a8;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-row button {
+            flex: 1;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f9fafb;
+        }
+
+        .status-message {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            display: block;
+        }
+
+        .url-parts {
+            background: #f9fafb;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .url-parts h5 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .url-parts table {
+            width: 100%;
+        }
+
+        .url-parts td {
+            padding: 5px 0;
+            vertical-align: top;
+        }
+
+        .url-parts td:first-child {
+            font-weight: 600;
+            color: #555;
+            width: 120px;
+        }
+
+        .url-parts code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            word-break: break-all;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #C8102E;
+        }
+
+        .option-item input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔗 Orgler Creator</h1>
+        <p>Convert Power BI URLs to embed formats for Story Maps and RCView Dashboards</p>
+    </div>
+
+    <div class="container">
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="section">
+            <h3>
+                📥 Power BI URL Input
+                <button onclick="resetTool()" class="reset-btn">Reset</button>
+            </h3>
+            <div class="input-group">
+                <label>Paste your Power BI Report URL:</label>
+                <input type="text" id="pbiUrl" placeholder="https://app.powerbi.com/view?r=eyJ..." oninput="parseUrl()">
+                <p class="help-text">
+                    Accepted formats: Power BI report URLs, embed URLs, or sharing links.
+                    <br>Example: <code>https://app.powerbi.com/view?r=eyJrIjoiNzQ1...</code>
+                </p>
+            </div>
+
+            <div id="urlParts" class="url-parts hidden">
+                <h5>📋 Parsed URL Components</h5>
+                <table>
+                    <tr>
+                        <td>Type:</td>
+                        <td><code id="urlType">-</code></td>
+                    </tr>
+                    <tr>
+                        <td>Report ID:</td>
+                        <td><code id="urlReportId">-</code></td>
+                    </tr>
+                    <tr>
+                        <td>Workspace:</td>
+                        <td><code id="urlWorkspace">-</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>⚙️ Embed Options</h3>
+            <div class="options-grid">
+                <div class="option-item">
+                    <input type="checkbox" id="optNavHidden" checked>
+                    <label for="optNavHidden">Hide navigation pane</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="optFilterHidden" checked>
+                    <label for="optFilterHidden">Hide filter pane</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="optTransparent">
+                    <label for="optTransparent">Transparent background</label>
+                </div>
+                <div class="option-item">
+                    <label>Width:</label>
+                    <input type="number" id="optWidth" value="100" min="1" max="100">%
+                </div>
+                <div class="option-item">
+                    <label>Height:</label>
+                    <input type="number" id="optHeight" value="600" min="100" max="2000">px
+                </div>
+            </div>
+
+            <button onclick="generateEmbedCodes()" class="info-button">
+                🚀 Generate Embed Codes
+            </button>
+        </div>
+
+        <div class="section hidden" id="outputSection">
+            <h3>📤 Generated Embed Codes</h3>
+
+            <!-- Story Map Format -->
+            <div class="output-format">
+                <h4>
+                    <span class="badge story-map">Story Map</span>
+                    ArcGIS StoryMaps Embed
+                </h4>
+                <div class="input-group">
+                    <label>Embed URL for StoryMaps:</label>
+                    <textarea id="storyMapOutput" readonly></textarea>
+                </div>
+                <div class="button-row">
+                    <button onclick="copyToClipboard('storyMapOutput')" class="info-button secondary">
+                        📋 Copy URL
+                    </button>
+                    <button onclick="testUrl('storyMapOutput')" class="info-button success">
+                        🔗 Test URL
+                    </button>
+                </div>
+            </div>
+
+            <!-- RCView Format -->
+            <div class="output-format">
+                <h4>
+                    <span class="badge rcview">RCView</span>
+                    RCView Dashboard Embed
+                </h4>
+                <div class="input-group">
+                    <label>Embed URL for RCView:</label>
+                    <textarea id="rcviewOutput" readonly></textarea>
+                </div>
+                <div class="button-row">
+                    <button onclick="copyToClipboard('rcviewOutput')" class="info-button secondary">
+                        📋 Copy URL
+                    </button>
+                    <button onclick="testUrl('rcviewOutput')" class="info-button success">
+                        🔗 Test URL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Standard iframe -->
+            <div class="output-format">
+                <h4>
+                    <span class="badge iframe">HTML</span>
+                    Standard iframe Embed Code
+                </h4>
+                <div class="input-group">
+                    <label>HTML iframe code:</label>
+                    <textarea id="iframeOutput" readonly></textarea>
+                </div>
+                <div class="button-row">
+                    <button onclick="copyToClipboard('iframeOutput')" class="info-button secondary">
+                        📋 Copy Code
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section hidden" id="previewSection">
+            <h3>👁️ Preview</h3>
+            <iframe id="previewFrame" class="preview-frame" src="about:blank"></iframe>
+        </div>
+
+        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
+            <h3 style="color: #92400e;">📖 How to Use</h3>
+            <ol style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+                <li>Copy your Power BI report URL (from "Publish to web" or sharing)</li>
+                <li>Paste it into the input field above</li>
+                <li>Adjust embed options as needed</li>
+                <li>Click "Generate Embed Codes"</li>
+                <li>Copy the appropriate format for your target platform</li>
+            </ol>
+            <div style="margin-top: 15px; font-size: 13px; color: #78350f;">
+                <strong>Platform Notes:</strong>
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li><strong>Story Map:</strong> Use in ArcGIS StoryMaps "Embed" block</li>
+                    <li><strong>RCView:</strong> Use in RCView Dashboard iframe widgets</li>
+                    <li><strong>HTML iframe:</strong> Use in any website or web application</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let parsedUrl = null;
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+            setTimeout(() => { el.className = 'status-message'; }, 5000);
+        }
+
+        function resetTool() {
+            document.getElementById('pbiUrl').value = '';
+            document.getElementById('urlParts').classList.add('hidden');
+            document.getElementById('outputSection').classList.add('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('storyMapOutput').value = '';
+            document.getElementById('rcviewOutput').value = '';
+            document.getElementById('iframeOutput').value = '';
+            document.getElementById('previewFrame').src = 'about:blank';
+            parsedUrl = null;
+        }
+
+        function parseUrl() {
+            const url = document.getElementById('pbiUrl').value.trim();
+            const urlPartsEl = document.getElementById('urlParts');
+
+            if (!url) {
+                urlPartsEl.classList.add('hidden');
+                parsedUrl = null;
+                return;
+            }
+
+            try {
+                parsedUrl = extractPowerBIParams(url);
+
+                if (parsedUrl) {
+                    document.getElementById('urlType').textContent = parsedUrl.type;
+                    document.getElementById('urlReportId').textContent = parsedUrl.reportId || '-';
+                    document.getElementById('urlWorkspace').textContent = parsedUrl.workspace || 'Public';
+                    urlPartsEl.classList.remove('hidden');
+                } else {
+                    urlPartsEl.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error('Parse error:', e);
+                urlPartsEl.classList.add('hidden');
+                parsedUrl = null;
+            }
+        }
+
+        function extractPowerBIParams(url) {
+            // Handle different Power BI URL formats
+
+            // Format 1: Public embed URL (view?r=...)
+            if (url.includes('app.powerbi.com/view')) {
+                const match = url.match(/[?&]r=([^&]+)/);
+                if (match) {
+                    return {
+                        type: 'Public Embed',
+                        reportId: match[1].substring(0, 20) + '...',
+                        fullParam: match[1],
+                        baseUrl: url.split('?')[0],
+                        originalUrl: url
+                    };
+                }
+            }
+
+            // Format 2: Report URL with reportId
+            if (url.includes('/reports/')) {
+                const match = url.match(/\/reports\/([a-f0-9-]+)/i);
+                const workspaceMatch = url.match(/\/groups\/([a-f0-9-]+)/i);
+                if (match) {
+                    return {
+                        type: 'Report Link',
+                        reportId: match[1],
+                        workspace: workspaceMatch ? workspaceMatch[1] : null,
+                        originalUrl: url
+                    };
+                }
+            }
+
+            // Format 3: reportEmbed URL
+            if (url.includes('reportEmbed')) {
+                const reportMatch = url.match(/reportId=([a-f0-9-]+)/i);
+                const groupMatch = url.match(/groupId=([a-f0-9-]+)/i);
+                if (reportMatch) {
+                    return {
+                        type: 'Embed Link',
+                        reportId: reportMatch[1],
+                        workspace: groupMatch ? groupMatch[1] : null,
+                        originalUrl: url
+                    };
+                }
+            }
+
+            // If it's just a URL that looks like Power BI, try to use it as-is
+            if (url.includes('powerbi.com') || url.includes('powerbi')) {
+                return {
+                    type: 'Direct URL',
+                    reportId: 'Custom',
+                    originalUrl: url
+                };
+            }
+
+            return null;
+        }
+
+        function generateEmbedCodes() {
+            const url = document.getElementById('pbiUrl').value.trim();
+
+            if (!url) {
+                showStatus('Please enter a Power BI URL', 'error');
+                return;
+            }
+
+            if (!parsedUrl) {
+                parseUrl();
+            }
+
+            if (!parsedUrl) {
+                showStatus('Could not parse the Power BI URL. Please check the format.', 'error');
+                return;
+            }
+
+            // Get options
+            const navHidden = document.getElementById('optNavHidden').checked;
+            const filterHidden = document.getElementById('optFilterHidden').checked;
+            const transparent = document.getElementById('optTransparent').checked;
+            const width = document.getElementById('optWidth').value || 100;
+            const height = document.getElementById('optHeight').value || 600;
+
+            // Build embed URL with parameters
+            let embedUrl = parsedUrl.originalUrl;
+
+            // Add/update parameters
+            const params = new URLSearchParams();
+            if (navHidden) params.set('navContentPaneEnabled', 'false');
+            if (filterHidden) params.set('filterPaneEnabled', 'false');
+            if (transparent) params.set('transparentBackground', 'true');
+
+            // Construct final URL
+            const separator = embedUrl.includes('?') ? '&' : '?';
+            const paramsString = params.toString();
+            const finalUrl = paramsString ? `${embedUrl}${separator}${paramsString}` : embedUrl;
+
+            // Story Map format (clean URL)
+            const storyMapUrl = finalUrl;
+
+            // RCView format (may need specific wrapper)
+            const rcviewUrl = finalUrl;
+
+            // Standard iframe
+            const iframeCode = `<iframe
+    title="Power BI Report"
+    width="${width}%"
+    height="${height}"
+    src="${finalUrl}"
+    frameborder="0"
+    allowFullScreen="true"
+    style="border: none;">
+</iframe>`;
+
+            // Set outputs
+            document.getElementById('storyMapOutput').value = storyMapUrl;
+            document.getElementById('rcviewOutput').value = rcviewUrl;
+            document.getElementById('iframeOutput').value = iframeCode;
+
+            // Show output section
+            document.getElementById('outputSection').classList.remove('hidden');
+
+            showStatus('Embed codes generated successfully!', 'success');
+        }
+
+        function copyToClipboard(elementId) {
+            const textarea = document.getElementById(elementId);
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+
+            try {
+                document.execCommand('copy');
+                showStatus('Copied to clipboard!', 'success');
+            } catch (err) {
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    showStatus('Copied to clipboard!', 'success');
+                }).catch(() => {
+                    showStatus('Failed to copy. Please select and copy manually.', 'error');
+                });
+            }
+        }
+
+        function testUrl(elementId) {
+            const url = document.getElementById(elementId).value.trim();
+            if (!url) {
+                showStatus('No URL to test', 'error');
+                return;
+            }
+
+            // For URLs (not iframe code), open in new tab
+            if (!url.startsWith('<')) {
+                window.open(url, '_blank');
+            } else {
+                // For iframe code, show preview
+                const previewSection = document.getElementById('previewSection');
+                previewSection.classList.remove('hidden');
+
+                // Extract src from iframe
+                const srcMatch = url.match(/src="([^"]+)"/);
+                if (srcMatch) {
+                    document.getElementById('previewFrame').src = srcMatch[1];
+                }
+            }
+        }
+    </script>
+</body>
+</html>

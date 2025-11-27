@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create GeoJSON Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #C8102E;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid #8B0000;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input[type="file"],
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-group select:focus {
+            outline: none;
+            border-color: #C8102E;
+            box-shadow: 0 0 0 2px rgba(200,16,46,0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .info-button {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .info-button:hover {
+            background: #8B0000;
+        }
+
+        .info-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info-button.success {
+            background: #10b981;
+        }
+
+        .info-button.success:hover {
+            background: #059669;
+        }
+
+        .reset-btn {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background: #8B0000;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #999;
+        }
+
+        .step.active {
+            color: #C8102E;
+        }
+
+        .step.completed {
+            color: #10b981;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step.active .step-number {
+            background: #C8102E;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #10b981;
+            color: white;
+        }
+
+        .geo-level-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .geo-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .geo-card:hover {
+            border-color: #C8102E;
+            background: #fef7f7;
+        }
+
+        .geo-card.selected {
+            border-color: #C8102E;
+            background: #fef7f7;
+            box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+        }
+
+        .geo-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .geo-card .title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .geo-card .desc {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        .preview-table th {
+            background: #f5f5f5;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .preview-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .preview-table tr:hover {
+            background: #fafafa;
+        }
+
+        .column-select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar-bg {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: #C8102E;
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #C8102E;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ Create GeoJSON</h1>
+        <p>Transform CSV data into GeoJSON files at multiple geographic levels</p>
+    </div>
+
+    <div class="container">
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <span>Upload CSV</span>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <span>Configure</span>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <span>Generate</span>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Step 1: Upload CSV -->
+        <div class="section" id="uploadSection">
+            <h3>
+                📁 Step 1: Upload Your CSV File
+                <button onclick="resetTool()" class="reset-btn">Reset</button>
+            </h3>
+            <div class="input-group">
+                <label>Select CSV File:</label>
+                <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload(event)">
+                <p class="help-text">Your CSV should contain geographic identifiers like ZIP codes, FIPS codes, or Red Cross codes (ECODE, RCODE, DCODE).</p>
+            </div>
+        </div>
+
+        <!-- Step 2: Configure -->
+        <div class="section hidden" id="configSection">
+            <h3>⚙️ Step 2: Configure Mapping</h3>
+
+            <div class="input-group">
+                <label>Preview of Your Data (first 5 rows):</label>
+                <div style="overflow-x: auto;">
+                    <table class="preview-table" id="previewTable"></table>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Select the column containing your geographic identifier:</label>
+                <select id="geoColumn" onchange="detectGeoType()">
+                    <option value="">-- Select Column --</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Select Geographic Level for Output:</label>
+                <div class="geo-level-cards">
+                    <div class="geo-card" onclick="selectGeoLevel('zip')" data-level="zip">
+                        <div class="icon">📍</div>
+                        <div class="title">ZIP Code</div>
+                        <div class="desc">5-digit ZIP codes</div>
+                    </div>
+                    <div class="geo-card" onclick="selectGeoLevel('county')" data-level="county">
+                        <div class="icon">🏛️</div>
+                        <div class="title">County</div>
+                        <div class="desc">FIPS codes</div>
+                    </div>
+                    <div class="geo-card" onclick="selectGeoLevel('chapter')" data-level="chapter">
+                        <div class="icon">🏠</div>
+                        <div class="title">Chapter</div>
+                        <div class="desc">ECODE</div>
+                    </div>
+                    <div class="geo-card" onclick="selectGeoLevel('region')" data-level="region">
+                        <div class="icon">🗺️</div>
+                        <div class="title">Region</div>
+                        <div class="desc">RCODE</div>
+                    </div>
+                    <div class="geo-card" onclick="selectGeoLevel('division')" data-level="division">
+                        <div class="icon">🌎</div>
+                        <div class="title">Division</div>
+                        <div class="desc">DCODE</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Select the column to use for data values (optional):</label>
+                <select id="valueColumn">
+                    <option value="">-- Count records (default) --</option>
+                </select>
+                <p class="help-text">If selected, values will be summed per geographic area. Otherwise, records will be counted.</p>
+            </div>
+
+            <button onclick="generateGeoJSON()" class="info-button" id="generateBtn" disabled>
+                🚀 Generate GeoJSON
+            </button>
+        </div>
+
+        <!-- Step 3: Results -->
+        <div class="section hidden" id="resultsSection">
+            <h3>✅ Step 3: Download Your GeoJSON</h3>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+                </div>
+                <p id="progressText" style="text-align: center; margin-top: 10px; color: #666;"></p>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-item">
+                    <div class="value" id="statRecords">0</div>
+                    <div class="label">CSV Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="statMatched">0</div>
+                    <div class="label">Matched</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="statFeatures">0</div>
+                    <div class="label">Features</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="statUnmatched">0</div>
+                    <div class="label">Unmatched</div>
+                </div>
+            </div>
+
+            <button onclick="downloadGeoJSON()" class="info-button success" id="downloadBtn" disabled style="margin-top: 20px;">
+                💾 Download GeoJSON
+            </button>
+        </div>
+
+        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
+            <h3 style="color: #92400e;">📖 How to Use</h3>
+            <ol style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+                <li>Upload a CSV file with geographic identifiers</li>
+                <li>Select which column contains your geographic codes</li>
+                <li>Choose the geographic level for your output</li>
+                <li>Optionally select a value column to aggregate</li>
+                <li>Click Generate to create your GeoJSON</li>
+                <li>Download the result for use in ArcGIS, QGIS, or web maps</li>
+            </ol>
+            <p style="font-size: 12px; color: #78350f; margin-top: 10px; font-style: italic;">
+                <strong>Supported identifiers:</strong> ZIP codes, FIPS codes (county), ECODE (chapter), RCODE (region), DCODE (division)
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let csvHeaders = [];
+        let selectedGeoLevel = null;
+        let generatedGeoJSON = null;
+        let lookupData = [];
+
+        // Boundary file URLs from red-cross-data repo
+        const BOUNDARY_URLS = {
+            zip: 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/boundaries/us_zctas.json',
+            county: 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/boundaries/arc_counties.geojson',
+            chapter: 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/boundaries/arc_chapters.geojson',
+            region: 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/boundaries/arc_regions.geojson',
+            division: 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/boundaries/arc_divisions.geojson'
+        };
+
+        const LOOKUP_URL = 'https://raw.githubusercontent.com/franzenjb/red-cross-data/main/lookup-tables/zip_to_redcross.csv';
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').className = 'status-message';
+        }
+
+        function updateSteps(current) {
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById('step' + i);
+                step.classList.remove('active', 'completed');
+                if (i < current) step.classList.add('completed');
+                if (i === current) step.classList.add('active');
+            }
+        }
+
+        function resetTool() {
+            csvData = [];
+            csvHeaders = [];
+            selectedGeoLevel = null;
+            generatedGeoJSON = null;
+
+            document.getElementById('csvFile').value = '';
+            document.getElementById('geoColumn').innerHTML = '<option value="">-- Select Column --</option>';
+            document.getElementById('valueColumn').innerHTML = '<option value="">-- Count records (default) --</option>';
+            document.getElementById('previewTable').innerHTML = '';
+            document.getElementById('configSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+
+            document.querySelectorAll('.geo-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('downloadBtn').disabled = true;
+
+            hideStatus();
+            updateSteps(1);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showStatus('Reading CSV file...', 'info');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    parseCSV(text);
+                    showStatus(`Loaded ${csvData.length} records with ${csvHeaders.length} columns`, 'success');
+                    document.getElementById('configSection').classList.remove('hidden');
+                    updateSteps(2);
+                } catch (error) {
+                    showStatus('Error parsing CSV: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            csvHeaders = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            csvData = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= csvHeaders.length) {
+                    const row = {};
+                    csvHeaders.forEach((header, index) => {
+                        row[header] = values[index] ? values[index].trim().replace(/^"|"$/g, '') : '';
+                    });
+                    csvData.push(row);
+                }
+            }
+
+            // Populate dropdowns
+            const geoSelect = document.getElementById('geoColumn');
+            const valueSelect = document.getElementById('valueColumn');
+
+            csvHeaders.forEach(header => {
+                geoSelect.innerHTML += `<option value="${header}">${header}</option>`;
+                valueSelect.innerHTML += `<option value="${header}">${header}</option>`;
+            });
+
+            // Show preview
+            showPreview();
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function showPreview() {
+            const table = document.getElementById('previewTable');
+            let html = '<thead><tr>';
+            csvHeaders.forEach(h => {
+                html += `<th>${escapeHtml(h)}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            const previewRows = csvData.slice(0, 5);
+            previewRows.forEach(row => {
+                html += '<tr>';
+                csvHeaders.forEach(h => {
+                    html += `<td>${escapeHtml(row[h] || '')}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        function detectGeoType() {
+            checkCanGenerate();
+        }
+
+        function selectGeoLevel(level) {
+            selectedGeoLevel = level;
+            document.querySelectorAll('.geo-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.level === level);
+            });
+            checkCanGenerate();
+        }
+
+        function checkCanGenerate() {
+            const geoColumn = document.getElementById('geoColumn').value;
+            const canGenerate = geoColumn && selectedGeoLevel;
+            document.getElementById('generateBtn').disabled = !canGenerate;
+        }
+
+        async function generateGeoJSON() {
+            const geoColumn = document.getElementById('geoColumn').value;
+            const valueColumn = document.getElementById('valueColumn').value;
+
+            if (!geoColumn || !selectedGeoLevel) {
+                showStatus('Please select a geographic column and level', 'error');
+                return;
+            }
+
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('downloadBtn').disabled = true;
+            updateSteps(3);
+
+            try {
+                // Show progress
+                updateProgress(10, 'Loading lookup data...');
+
+                // Load lookup data if needed
+                if (lookupData.length === 0) {
+                    const lookupResponse = await fetch(LOOKUP_URL);
+                    const lookupText = await lookupResponse.text();
+                    lookupData = parseCSVText(lookupText);
+                }
+
+                updateProgress(30, `Loading ${selectedGeoLevel} boundaries...`);
+
+                // Load boundary file
+                const boundaryUrl = BOUNDARY_URLS[selectedGeoLevel];
+                const boundaryResponse = await fetch(boundaryUrl);
+
+                if (!boundaryResponse.ok) {
+                    throw new Error(`Failed to load boundary file: ${boundaryResponse.status}`);
+                }
+
+                const boundaries = await boundaryResponse.json();
+
+                updateProgress(50, 'Aggregating data...');
+
+                // Aggregate CSV data by geographic area
+                const aggregated = aggregateData(geoColumn, valueColumn);
+
+                updateProgress(70, 'Joining with boundaries...');
+
+                // Join with boundaries
+                generatedGeoJSON = joinWithBoundaries(aggregated, boundaries, selectedGeoLevel);
+
+                updateProgress(100, 'Complete!');
+
+                // Update stats
+                document.getElementById('statRecords').textContent = csvData.length;
+                document.getElementById('statMatched').textContent = Object.keys(aggregated).length;
+                document.getElementById('statFeatures').textContent = generatedGeoJSON.features.length;
+                document.getElementById('statUnmatched').textContent =
+                    csvData.length - Object.values(aggregated).reduce((sum, v) => sum + v.count, 0);
+
+                document.getElementById('downloadBtn').disabled = false;
+                showStatus(`Successfully created GeoJSON with ${generatedGeoJSON.features.length} features`, 'success');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Error generating GeoJSON: ' + error.message, 'error');
+            }
+        }
+
+        function parseCSVText(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] ? values[index].trim() : '';
+                    });
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function aggregateData(geoColumn, valueColumn) {
+            const aggregated = {};
+
+            csvData.forEach(row => {
+                let key = row[geoColumn];
+                if (!key) return;
+
+                // Normalize the key based on geo level
+                key = normalizeGeoKey(key, selectedGeoLevel);
+                if (!key) return;
+
+                if (!aggregated[key]) {
+                    aggregated[key] = { count: 0, value: 0 };
+                }
+
+                aggregated[key].count++;
+
+                if (valueColumn && row[valueColumn]) {
+                    const val = parseFloat(row[valueColumn]);
+                    if (!isNaN(val)) {
+                        aggregated[key].value += val;
+                    }
+                }
+            });
+
+            return aggregated;
+        }
+
+        function normalizeGeoKey(key, level) {
+            key = String(key).trim();
+
+            switch (level) {
+                case 'zip':
+                    // Ensure 5-digit ZIP
+                    return key.padStart(5, '0').substring(0, 5);
+                case 'county':
+                    // Ensure 5-digit FIPS
+                    return key.padStart(5, '0');
+                case 'chapter':
+                case 'region':
+                case 'division':
+                    return key.toUpperCase();
+                default:
+                    return key;
+            }
+        }
+
+        function joinWithBoundaries(aggregated, boundaries, level) {
+            const features = [];
+            const keyField = getKeyField(level);
+
+            boundaries.features.forEach(feature => {
+                const props = feature.properties || {};
+                let key = props[keyField] || props.GEOID || props.ZCTA5CE10 || '';
+                key = normalizeGeoKey(key, level);
+
+                if (aggregated[key]) {
+                    const newProps = { ...props };
+                    newProps.data_count = aggregated[key].count;
+                    newProps.data_value = aggregated[key].value;
+
+                    features.push({
+                        type: 'Feature',
+                        properties: newProps,
+                        geometry: feature.geometry
+                    });
+                }
+            });
+
+            return {
+                type: 'FeatureCollection',
+                features: features
+            };
+        }
+
+        function getKeyField(level) {
+            switch (level) {
+                case 'zip': return 'ZCTA5CE10';
+                case 'county': return 'FIPS';
+                case 'chapter': return 'ECODE';
+                case 'region': return 'RCODE';
+                case 'division': return 'DCODE';
+                default: return 'GEOID';
+            }
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressBar').textContent = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function downloadGeoJSON() {
+            if (!generatedGeoJSON) {
+                showStatus('No GeoJSON to download', 'error');
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(generatedGeoJSON, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `output_${selectedGeoLevel}_${new Date().toISOString().split('T')[0]}.geojson`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus('GeoJSON downloaded!', 'success');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
