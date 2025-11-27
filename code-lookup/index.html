@@ -66,75 +66,72 @@
             margin-bottom: 15px;
             font-size: 18px;
             font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .input-group input[type="text"],
-        .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-        }
-
-        .input-group input[type="text"]:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #C8102E;
-            box-shadow: 0 0 0 2px rgba(200,16,46,0.1);
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .info-button {
+        .reset-btn {
             background: #C8102E;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 6px 12px;
+            font-size: 12px;
             border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
-            width: 100%;
         }
 
-        .info-button:hover {
+        .reset-btn:hover {
             background: #8B0000;
         }
 
-        .info-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .search-row {
+        .search-grid {
             display: grid;
-            grid-template-columns: 200px 1fr auto;
-            gap: 15px;
-            align-items: end;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
         }
 
-        @media (max-width: 768px) {
-            .search-row {
-                grid-template-columns: 1fr;
-            }
+        .search-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .search-card:hover {
+            border-color: #C8102E;
+        }
+
+        .search-card:focus-within {
+            border-color: #C8102E;
+            box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+        }
+
+        .search-card .title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .search-card .hint {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .search-card input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .search-card input:focus {
+            outline: none;
+            border-color: #C8102E;
         }
 
         .results-container {
@@ -196,33 +193,6 @@
             background: #6b21a8;
         }
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #f9fafb;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: 700;
-            color: #C8102E;
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-        }
-
         .loading {
             text-align: center;
             padding: 40px;
@@ -259,20 +229,20 @@
             margin-bottom: 10px;
         }
 
-        .copy-btn {
-            background: transparent;
-            border: 1px solid #ddd;
-            padding: 4px 8px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 11px;
-            color: #666;
+        .help-section {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
         }
 
-        .copy-btn:hover {
-            background: #f5f5f5;
-            border-color: #C8102E;
-            color: #C8102E;
+        .help-section h3 {
+            color: #92400e;
+        }
+
+        .help-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #78350f;
         }
     </style>
 </head>
@@ -285,71 +255,60 @@
 
     <div class="container">
         <div class="section">
-            <h3>📊 Database Statistics</h3>
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="number" id="statChapters">-</div>
-                    <div class="label">Chapters</div>
+            <h3>🔎 Search <button onclick="resetAllSearches()" class="reset-btn">🔄 Reset All Searches</button></h3>
+            <div class="search-grid">
+                <div class="search-card">
+                    <div class="title">Chapter Name or ECODE</div>
+                    <div class="hint">e.g., ARC serving Mid Alabama or 1019</div>
+                    <input type="text" id="searchChapter" placeholder="Search chapters..." onkeyup="handleSearch(event, 'chapter')">
                 </div>
-                <div class="stat-card">
-                    <div class="number" id="statRegions">-</div>
-                    <div class="label">Regions</div>
+                <div class="search-card">
+                    <div class="title">Region Name or RCODE</div>
+                    <div class="hint">e.g., Alabama Region or 01R04</div>
+                    <input type="text" id="searchRegion" placeholder="Search regions..." onkeyup="handleSearch(event, 'region')">
                 </div>
-                <div class="stat-card">
-                    <div class="number" id="statDivisions">-</div>
-                    <div class="label">Divisions</div>
+                <div class="search-card">
+                    <div class="title">Division Name or DCODE</div>
+                    <div class="hint">e.g., Southeast Division or D25</div>
+                    <input type="text" id="searchDivision" placeholder="Search divisions..." onkeyup="handleSearch(event, 'division')">
                 </div>
-                <div class="stat-card">
-                    <div class="number" id="statCounties">-</div>
-                    <div class="label">Counties</div>
+                <div class="search-card">
+                    <div class="title">ZIP Code</div>
+                    <div class="hint">e.g., 33704</div>
+                    <input type="text" id="searchZip" placeholder="Search ZIP codes..." onkeyup="handleSearch(event, 'zip')">
                 </div>
-                <div class="stat-card">
-                    <div class="number" id="statZips">-</div>
-                    <div class="label">ZIP Codes</div>
+                <div class="search-card">
+                    <div class="title">County Name</div>
+                    <div class="hint">e.g., Broward</div>
+                    <input type="text" id="searchCounty" placeholder="Search counties..." onkeyup="handleSearch(event, 'county')">
+                </div>
+                <div class="search-card">
+                    <div class="title">State (shows state code + counties)</div>
+                    <div class="hint">e.g., FL or Florida</div>
+                    <input type="text" id="searchState" placeholder="Search states..." onkeyup="handleSearch(event, 'state')">
+                </div>
+                <div class="search-card">
+                    <div class="title">FIPS Code (5-digit: State+County)</div>
+                    <div class="hint">e.g., 12011 (FL=12, Broward=011)</div>
+                    <input type="text" id="searchFips" placeholder="Search FIPS codes..." onkeyup="handleSearch(event, 'fips')">
                 </div>
             </div>
-        </div>
-
-        <div class="section">
-            <h3>🔎 Search</h3>
-            <div class="search-row">
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label>Search By:</label>
-                    <select id="searchType">
-                        <option value="all">All Fields</option>
-                        <option value="chapter">Chapter Name</option>
-                        <option value="region">Region</option>
-                        <option value="division">Division</option>
-                        <option value="county">County</option>
-                        <option value="state">State</option>
-                        <option value="zip">ZIP Code</option>
-                        <option value="ecode">ECODE</option>
-                        <option value="rcode">RCODE</option>
-                        <option value="dcode">DCODE</option>
-                        <option value="fips">FIPS Code</option>
-                    </select>
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label>Search Term:</label>
-                    <input type="text" id="searchInput" placeholder="Enter search term..." onkeyup="handleSearchKeyup(event)">
-                </div>
-                <button onclick="performSearch()" class="info-button" style="width: auto; padding: 12px 30px;">
-                    Search
-                </button>
-            </div>
-            <p class="help-text">Search is case-insensitive. For ZIP codes, enter 5 digits. For codes, enter partial or full code.</p>
         </div>
 
         <div class="section">
             <h3>📋 Results</h3>
             <div id="resultsContainer">
-                <div class="no-results">Enter a search term above to find Red Cross codes</div>
+                <div class="no-results">
+                    🔍<br>
+                    Enter a search term to find codes<br>
+                    <small>Search by Chapter, Region, Division, County, State, or FIPS</small>
+                </div>
             </div>
         </div>
 
-        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
-            <h3 style="color: #92400e;">📖 Code Reference</h3>
-            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+        <div class="section help-section">
+            <h3>📖 Code Reference</h3>
+            <ul>
                 <li><strong>ECODE</strong> - Entity Code: Unique identifier for each Red Cross chapter</li>
                 <li><strong>RCODE</strong> - Region Code: Identifies the region (e.g., 17R08 = Region 8 in Division 17)</li>
                 <li><strong>DCODE</strong> - Division Code: Identifies the division (e.g., D24 = Central Atlantic Division)</li>
@@ -359,7 +318,6 @@
     </div>
 
     <script>
-        let lookupData = { chapters: [], counties: [] };
         let zipData = [];
         let dataLoaded = false;
 
@@ -371,11 +329,6 @@
             resultsContainer.innerHTML = '<div class="loading">Loading database...</div>';
 
             try {
-                // Load lookup database
-                const lookupResponse = await fetch('https://raw.githubusercontent.com/franzenjb/red-cross-data/main/lookup-tables/lookup_database.json');
-                if (!lookupResponse.ok) throw new Error('Failed to load lookup database');
-                lookupData = await lookupResponse.json();
-
                 // Load ZIP to Red Cross mapping
                 const zipResponse = await fetch('https://raw.githubusercontent.com/franzenjb/red-cross-data/main/lookup-tables/zip_to_redcross.csv');
                 if (!zipResponse.ok) throw new Error('Failed to load ZIP database');
@@ -383,8 +336,11 @@
                 zipData = parseCSV(zipText);
 
                 dataLoaded = true;
-                updateStats();
-                resultsContainer.innerHTML = '<div class="no-results">Enter a search term above to find Red Cross codes</div>';
+                resultsContainer.innerHTML = `<div class="no-results">
+                    🔍<br>
+                    Enter a search term to find codes<br>
+                    <small>Search by Chapter, Region, Division, County, State, or FIPS</small>
+                </div>`;
 
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -430,79 +386,85 @@
             return result;
         }
 
-        function updateStats() {
-            // Count unique values
-            const chapters = new Set(zipData.map(r => r.Chapter).filter(c => c));
-            const regions = new Set(zipData.map(r => r.Region).filter(r => r));
-            const divisions = new Set(zipData.map(r => r.Division).filter(d => d));
-            const counties = new Set(zipData.map(r => r.County).filter(c => c));
-
-            document.getElementById('statChapters').textContent = chapters.size;
-            document.getElementById('statRegions').textContent = regions.size;
-            document.getElementById('statDivisions').textContent = divisions.size;
-            document.getElementById('statCounties').textContent = counties.size;
-            document.getElementById('statZips').textContent = zipData.length.toLocaleString();
+        function resetAllSearches() {
+            document.getElementById('searchChapter').value = '';
+            document.getElementById('searchRegion').value = '';
+            document.getElementById('searchDivision').value = '';
+            document.getElementById('searchZip').value = '';
+            document.getElementById('searchCounty').value = '';
+            document.getElementById('searchState').value = '';
+            document.getElementById('searchFips').value = '';
+            document.getElementById('resultsContainer').innerHTML = `<div class="no-results">
+                🔍<br>
+                Enter a search term to find codes<br>
+                <small>Search by Chapter, Region, Division, County, State, or FIPS</small>
+            </div>`;
         }
 
-        function handleSearchKeyup(event) {
-            if (event.key === 'Enter') {
-                performSearch();
+        function handleSearch(event, searchType) {
+            // Clear other search inputs when typing in one
+            const inputs = ['searchChapter', 'searchRegion', 'searchDivision', 'searchZip', 'searchCounty', 'searchState', 'searchFips'];
+            const currentInput = event.target.id;
+
+            inputs.forEach(id => {
+                if (id !== currentInput) {
+                    document.getElementById(id).value = '';
+                }
+            });
+
+            // Search on Enter or after 2+ characters
+            const searchTerm = event.target.value.trim();
+            if (event.key === 'Enter' || searchTerm.length >= 2) {
+                performSearch(searchType, searchTerm);
+            } else if (searchTerm.length === 0) {
+                document.getElementById('resultsContainer').innerHTML = `<div class="no-results">
+                    🔍<br>
+                    Enter a search term to find codes<br>
+                    <small>Search by Chapter, Region, Division, County, State, or FIPS</small>
+                </div>`;
             }
         }
 
-        function performSearch() {
+        function performSearch(searchType, searchTerm) {
             if (!dataLoaded) {
                 alert('Data is still loading. Please wait...');
                 return;
             }
 
-            const searchType = document.getElementById('searchType').value;
-            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (!searchTerm) return;
 
-            if (!searchTerm) {
-                document.getElementById('resultsContainer').innerHTML =
-                    '<div class="no-results">Please enter a search term</div>';
-                return;
-            }
-
+            const term = searchTerm.toLowerCase();
             let results = [];
 
-            // Search ZIP data
             results = zipData.filter(row => {
                 switch (searchType) {
                     case 'chapter':
-                        return (row.Chapter || '').toLowerCase().includes(searchTerm);
+                        return (row.Chapter || '').toLowerCase().includes(term) ||
+                               (row.ECODE || '').toLowerCase().includes(term);
                     case 'region':
-                        return (row.Region || '').toLowerCase().includes(searchTerm);
+                        return (row.Region || '').toLowerCase().includes(term) ||
+                               (row.RCODE || '').toLowerCase().includes(term);
                     case 'division':
-                        return (row.Division || '').toLowerCase().includes(searchTerm);
-                    case 'county':
-                        return (row.County || '').toLowerCase().includes(searchTerm);
-                    case 'state':
-                        return (row.State || '').toLowerCase() === searchTerm ||
-                               (row.State || '').toLowerCase().includes(searchTerm);
+                        return (row.Division || '').toLowerCase().includes(term) ||
+                               (row.DCODE || '').toLowerCase().includes(term);
                     case 'zip':
-                        return (row.ZIP_CODE || '').includes(searchTerm);
-                    case 'ecode':
-                        return (row.ECODE || '').toLowerCase().includes(searchTerm);
-                    case 'rcode':
-                        return (row.RCODE || '').toLowerCase().includes(searchTerm);
-                    case 'dcode':
-                        return (row.DCODE || '').toLowerCase().includes(searchTerm);
+                        return (row.ZIP_CODE || '').includes(term);
+                    case 'county':
+                        return (row.County || '').toLowerCase().includes(term);
+                    case 'state':
+                        return (row.State || '').toLowerCase() === term ||
+                               (row.State || '').toLowerCase().includes(term);
                     case 'fips':
-                        return (row.COUNTY_FIPS || '').includes(searchTerm);
-                    case 'all':
+                        return (row.COUNTY_FIPS || '').includes(term);
                     default:
-                        return Object.values(row).some(val =>
-                            (val || '').toLowerCase().includes(searchTerm)
-                        );
+                        return false;
                 }
             });
 
-            displayResults(results);
+            displayResults(results, searchType);
         }
 
-        function displayResults(results) {
+        function displayResults(results, searchType) {
             const container = document.getElementById('resultsContainer');
 
             if (results.length === 0) {
