@@ -17,13 +17,12 @@ This repository keeps tools organized separately so they don't get "marbled toge
 
 ```
 geojson-pipeline-tools/
-├── code-lookup/          🚧 To extract - Red Cross code lookup tool
-├── create-geojson/       🚧 To extract - CSV to GeoJSON converter
-├── orgler-creator/       🚧 To extract - Power BI to Orgler converter
-└── popup-creator/        ✅ Ready - ArcGIS pop-up template generator
+├── popup-creator/        ✅ Ready - ArcGIS pop-up template generator
+├── geocoder/             ✅ Ready - MapBox geocoding with batch CSV support
+├── code-lookup/          ✅ Ready - Red Cross code lookup tool
+├── create-geojson/       ✅ Ready - CSV to GeoJSON converter
+└── orgler-creator/       ✅ Ready - Power BI to Orgler converter
 ```
-
-**Source**: `/Users/jefffranzen/Desktop/bingo/geojson-pipeline-repo/index.html`
 
 ## 🌐 Live Demo
 
@@ -45,11 +44,13 @@ Each tool directory contains:
 
 ## ✅ Current Status
 
-- **Pop-up Creator**: ✅ Complete with Playwright tests (extracted and standalone)
-- **Other tools**: 🚧 To be extracted from `/Users/jefffranzen/Desktop/bingo/geojson-pipeline-repo/index.html`
-  - Code Lookup Tool
-  - Create GeoJSON
-  - Orgler Creator
+All 5 tools are now complete and ready to use:
+
+- **Pop-up Creator**: ✅ Complete - ArcGIS pop-up template generator with Playwright tests
+- **Geocoder**: ✅ Complete - MapBox geocoding with single address and batch CSV support
+- **Code Lookup**: ✅ Complete - Search 33,000+ ZIP codes for Red Cross codes (ECODE, RCODE, DCODE, FIPS)
+- **Create GeoJSON**: ✅ Complete - Transform CSV data to GeoJSON at ZIP/County/Chapter/Region/Division levels
+- **Orgler Creator**: ✅ Complete - Convert Power BI URLs to Story Map and RCView embed formats
 
 ## 📝 Testing
 

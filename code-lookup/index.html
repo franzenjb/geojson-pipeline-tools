@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Cross Code Lookup Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #C8102E;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid #8B0000;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .input-group input[type="text"]:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #C8102E;
+            box-shadow: 0 0 0 2px rgba(200,16,46,0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .info-button {
+            background: #C8102E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .info-button:hover {
+            background: #8B0000;
+        }
+
+        .info-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 200px 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .results-table th {
+            background: #f5f5f5;
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .results-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table tr:hover {
+            background: #fef7f7;
+        }
+
+        .results-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .results-table tr:nth-child(even):hover {
+            background: #fef7f7;
+        }
+
+        .code-badge {
+            display: inline-block;
+            background: #C8102E;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .code-badge.blue {
+            background: #003f87;
+        }
+
+        .code-badge.green {
+            background: #065f46;
+        }
+
+        .code-badge.purple {
+            background: #6b21a8;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f9fafb;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #C8102E;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #C8102E;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .result-count {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .copy-btn:hover {
+            background: #f5f5f5;
+            border-color: #C8102E;
+            color: #C8102E;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 Red Cross Code Lookup</h1>
+        <p>Search chapters, regions, divisions, and counties to find ECODE, RCODE, DCODE, and FIPS codes</p>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h3>📊 Database Statistics</h3>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="number" id="statChapters">-</div>
+                    <div class="label">Chapters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statRegions">-</div>
+                    <div class="label">Regions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statDivisions">-</div>
+                    <div class="label">Divisions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statCounties">-</div>
+                    <div class="label">Counties</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statZips">-</div>
+                    <div class="label">ZIP Codes</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🔎 Search</h3>
+            <div class="search-row">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Search By:</label>
+                    <select id="searchType">
+                        <option value="all">All Fields</option>
+                        <option value="chapter">Chapter Name</option>
+                        <option value="region">Region</option>
+                        <option value="division">Division</option>
+                        <option value="county">County</option>
+                        <option value="state">State</option>
+                        <option value="zip">ZIP Code</option>
+                        <option value="ecode">ECODE</option>
+                        <option value="rcode">RCODE</option>
+                        <option value="dcode">DCODE</option>
+                        <option value="fips">FIPS Code</option>
+                    </select>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Search Term:</label>
+                    <input type="text" id="searchInput" placeholder="Enter search term..." onkeyup="handleSearchKeyup(event)">
+                </div>
+                <button onclick="performSearch()" class="info-button" style="width: auto; padding: 12px 30px;">
+                    Search
+                </button>
+            </div>
+            <p class="help-text">Search is case-insensitive. For ZIP codes, enter 5 digits. For codes, enter partial or full code.</p>
+        </div>
+
+        <div class="section">
+            <h3>📋 Results</h3>
+            <div id="resultsContainer">
+                <div class="no-results">Enter a search term above to find Red Cross codes</div>
+            </div>
+        </div>
+
+        <div class="section" style="background: #fef3c7; border: 1px solid #fcd34d;">
+            <h3 style="color: #92400e;">📖 Code Reference</h3>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; color: #78350f;">
+                <li><strong>ECODE</strong> - Entity Code: Unique identifier for each Red Cross chapter</li>
+                <li><strong>RCODE</strong> - Region Code: Identifies the region (e.g., 17R08 = Region 8 in Division 17)</li>
+                <li><strong>DCODE</strong> - Division Code: Identifies the division (e.g., D24 = Central Atlantic Division)</li>
+                <li><strong>FIPS</strong> - Federal Information Processing Standard code for counties</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let lookupData = { chapters: [], counties: [] };
+        let zipData = [];
+        let dataLoaded = false;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        async function loadData() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '<div class="loading">Loading database...</div>';
+
+            try {
+                // Load lookup database
+                const lookupResponse = await fetch('https://raw.githubusercontent.com/franzenjb/red-cross-data/main/lookup-tables/lookup_database.json');
+                if (!lookupResponse.ok) throw new Error('Failed to load lookup database');
+                lookupData = await lookupResponse.json();
+
+                // Load ZIP to Red Cross mapping
+                const zipResponse = await fetch('https://raw.githubusercontent.com/franzenjb/red-cross-data/main/lookup-tables/zip_to_redcross.csv');
+                if (!zipResponse.ok) throw new Error('Failed to load ZIP database');
+                const zipText = await zipResponse.text();
+                zipData = parseCSV(zipText);
+
+                dataLoaded = true;
+                updateStats();
+                resultsContainer.innerHTML = '<div class="no-results">Enter a search term above to find Red Cross codes</div>';
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                resultsContainer.innerHTML = `<div class="no-results" style="color: #dc2626;">Error loading database: ${error.message}</div>`;
+            }
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] ? values[index].trim() : '';
+                    });
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function updateStats() {
+            // Count unique values
+            const chapters = new Set(zipData.map(r => r.Chapter).filter(c => c));
+            const regions = new Set(zipData.map(r => r.Region).filter(r => r));
+            const divisions = new Set(zipData.map(r => r.Division).filter(d => d));
+            const counties = new Set(zipData.map(r => r.County).filter(c => c));
+
+            document.getElementById('statChapters').textContent = chapters.size;
+            document.getElementById('statRegions').textContent = regions.size;
+            document.getElementById('statDivisions').textContent = divisions.size;
+            document.getElementById('statCounties').textContent = counties.size;
+            document.getElementById('statZips').textContent = zipData.length.toLocaleString();
+        }
+
+        function handleSearchKeyup(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            if (!dataLoaded) {
+                alert('Data is still loading. Please wait...');
+                return;
+            }
+
+            const searchType = document.getElementById('searchType').value;
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            if (!searchTerm) {
+                document.getElementById('resultsContainer').innerHTML =
+                    '<div class="no-results">Please enter a search term</div>';
+                return;
+            }
+
+            let results = [];
+
+            // Search ZIP data
+            results = zipData.filter(row => {
+                switch (searchType) {
+                    case 'chapter':
+                        return (row.Chapter || '').toLowerCase().includes(searchTerm);
+                    case 'region':
+                        return (row.Region || '').toLowerCase().includes(searchTerm);
+                    case 'division':
+                        return (row.Division || '').toLowerCase().includes(searchTerm);
+                    case 'county':
+                        return (row.County || '').toLowerCase().includes(searchTerm);
+                    case 'state':
+                        return (row.State || '').toLowerCase() === searchTerm ||
+                               (row.State || '').toLowerCase().includes(searchTerm);
+                    case 'zip':
+                        return (row.ZIP_CODE || '').includes(searchTerm);
+                    case 'ecode':
+                        return (row.ECODE || '').toLowerCase().includes(searchTerm);
+                    case 'rcode':
+                        return (row.RCODE || '').toLowerCase().includes(searchTerm);
+                    case 'dcode':
+                        return (row.DCODE || '').toLowerCase().includes(searchTerm);
+                    case 'fips':
+                        return (row.COUNTY_FIPS || '').includes(searchTerm);
+                    case 'all':
+                    default:
+                        return Object.values(row).some(val =>
+                            (val || '').toLowerCase().includes(searchTerm)
+                        );
+                }
+            });
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+
+            if (results.length === 0) {
+                container.innerHTML = '<div class="no-results">No results found</div>';
+                return;
+            }
+
+            // Limit to 500 results for performance
+            const displayResults = results.slice(0, 500);
+            const hasMore = results.length > 500;
+
+            let html = `<div class="result-count">Found ${results.length.toLocaleString()} result${results.length !== 1 ? 's' : ''}${hasMore ? ' (showing first 500)' : ''}</div>`;
+
+            html += '<div style="overflow-x: auto;"><table class="results-table">';
+            html += `<thead><tr>
+                <th>ZIP Code</th>
+                <th>County</th>
+                <th>State</th>
+                <th>Chapter</th>
+                <th>Region</th>
+                <th>Division</th>
+                <th>ECODE</th>
+                <th>RCODE</th>
+                <th>DCODE</th>
+                <th>FIPS</th>
+            </tr></thead><tbody>`;
+
+            displayResults.forEach(row => {
+                html += `<tr>
+                    <td>${escapeHtml(row.ZIP_CODE || '-')}</td>
+                    <td>${escapeHtml(row.County || '-')}</td>
+                    <td>${escapeHtml(row.State || '-')}</td>
+                    <td>${escapeHtml(row.Chapter || '-')}</td>
+                    <td>${escapeHtml(row.Region || '-')}</td>
+                    <td>${escapeHtml(row.Division || '-')}</td>
+                    <td>${row.ECODE ? `<span class="code-badge">${escapeHtml(row.ECODE)}</span>` : '-'}</td>
+                    <td>${row.RCODE ? `<span class="code-badge blue">${escapeHtml(row.RCODE)}</span>` : '-'}</td>
+                    <td>${row.DCODE ? `<span class="code-badge green">${escapeHtml(row.DCODE)}</span>` : '-'}</td>
+                    <td>${row.COUNTY_FIPS ? `<span class="code-badge purple">${escapeHtml(row.COUNTY_FIPS)}</span>` : '-'}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
