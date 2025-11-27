@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metadata Viewer BETA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', 'Times New Roman', serif; background: #ffffff; color: #333; line-height: 1.6; }
+        .header { background: #C8102E; color: white; padding: 30px 20px; text-align: center; border-bottom: 3px solid #8B0000; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .beta-badge { background: #fbbf24; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 10px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .section { background: white; border-radius: 4px; padding: 25px; margin-bottom: 25px; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .section h3 { color: #333; margin-bottom: 15px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .input-group input, .input-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .input-group input:focus { outline: none; border-color: #C8102E; box-shadow: 0 0 0 2px rgba(200,16,46,0.1); }
+        .help-text { font-size: 12px; color: #666; margin-top: 5px; }
+        .info-button { background: #C8102E; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+        .info-button:hover { background: #8B0000; }
+        .info-button.success { background: #10b981; }
+        .reset-btn { background: #C8102E; color: white; border: none; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .metadata-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .metadata-card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; }
+        .metadata-card h4 { color: #C8102E; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        .metadata-card .value { font-size: 16px; color: #333; word-break: break-word; }
+        .metadata-card .value.code { font-family: 'Courier New', monospace; background: #e0e0e0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+        .fields-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .fields-table th { background: #f5f5f5; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+        .fields-table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        .fields-table tr:hover { background: #fafafa; }
+        .type-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .type-badge.string { background: #dbeafe; color: #1e40af; }
+        .type-badge.integer { background: #d1fae5; color: #065f46; }
+        .type-badge.double { background: #fef3c7; color: #92400e; }
+        .type-badge.date { background: #ede9fe; color: #6b21a8; }
+        .type-badge.oid { background: #fee2e2; color: #991b1b; }
+        .status-message { padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; display: none; }
+        .status-message.info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+        .status-message.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+        .status-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+        .hidden { display: none !important; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid #C8102E; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .copy-btn { background: transparent; border: 1px solid #ddd; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-left: 10px; }
+        .copy-btn:hover { background: #f5f5f5; border-color: #C8102E; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Metadata Viewer <span class="beta-badge">BETA</span></h1>
+        <p>Extract and display metadata from ArcGIS Feature Services</p>
+    </div>
+    <div class="container">
+        <div id="statusMessage" class="status-message"></div>
+
+        <div class="section">
+            <h3>🔗 Service URL <button onclick="resetTool()" class="reset-btn">Reset</button></h3>
+            <div class="input-group">
+                <label>Enter ArcGIS FeatureServer or MapServer URL:</label>
+                <input type="text" id="serviceUrl" placeholder="https://services.arcgis.com/.../FeatureServer/0">
+                <p class="help-text">Supports FeatureServer and MapServer endpoints. Layer number is optional.</p>
+            </div>
+            <button onclick="fetchMetadata()" class="info-button">🔍 Fetch Metadata</button>
+        </div>
+
+        <div id="loadingSection" class="section hidden">
+            <div class="loading">Fetching metadata...</div>
+        </div>
+
+        <div class="section hidden" id="resultsSection">
+            <h3>📊 Service Information</h3>
+            <div class="metadata-grid" id="serviceInfo"></div>
+        </div>
+
+        <div class="section hidden" id="fieldsSection">
+            <h3>📋 Fields (<span id="fieldCount">0</span>)</h3>
+            <div class="input-group">
+                <input type="text" id="fieldFilter" placeholder="🔍 Filter fields..." oninput="filterFields()">
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="fields-table" id="fieldsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Alias</th>
+                            <th>Type</th>
+                            <th>Length</th>
+                            <th>Nullable</th>
+                            <th>Editable</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fieldsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section hidden" id="rawSection">
+            <h3>📄 Raw JSON <button onclick="copyRaw()" class="copy-btn">Copy</button></h3>
+            <textarea id="rawJson" rows="15" style="font-family: 'Courier New', monospace; font-size: 12px;" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        let metadataJson = null;
+        let allFields = [];
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = 'status-message ' + type;
+        }
+
+        function resetTool() {
+            document.getElementById('serviceUrl').value = '';
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('fieldsSection').classList.add('hidden');
+            document.getElementById('rawSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('statusMessage').className = 'status-message';
+            metadataJson = null;
+            allFields = [];
+        }
+
+        async function fetchMetadata() {
+            let url = document.getElementById('serviceUrl').value.trim();
+            if (!url) {
+                showStatus('Please enter a service URL', 'error');
+                return;
+            }
+
+            // Ensure URL ends with ?f=json
+            url = url.split('?')[0] + '?f=json';
+
+            document.getElementById('loadingSection').classList.remove('hidden');
+            showStatus('Fetching metadata...', 'info');
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                metadataJson = await response.json();
+
+                if (metadataJson.error) {
+                    throw new Error(metadataJson.error.message || 'Service error');
+                }
+
+                displayMetadata();
+                document.getElementById('loadingSection').classList.add('hidden');
+                showStatus('Metadata loaded successfully', 'success');
+
+            } catch (error) {
+                document.getElementById('loadingSection').classList.add('hidden');
+                showStatus('Error: ' + error.message, 'error');
+            }
+        }
+
+        function displayMetadata() {
+            // Service info
+            const infoDiv = document.getElementById('serviceInfo');
+            const info = [
+                { label: 'Name', value: metadataJson.name || '-' },
+                { label: 'Type', value: metadataJson.type || '-' },
+                { label: 'Description', value: metadataJson.description || '-' },
+                { label: 'Geometry Type', value: metadataJson.geometryType || '-' },
+                { label: 'Object ID Field', value: metadataJson.objectIdField || '-' },
+                { label: 'Global ID Field', value: metadataJson.globalIdField || '-' },
+                { label: 'Display Field', value: metadataJson.displayField || '-' },
+                { label: 'Max Record Count', value: metadataJson.maxRecordCount || '-' },
+                { label: 'Supports Statistics', value: metadataJson.supportsStatistics ? 'Yes' : 'No' },
+                { label: 'Has Attachments', value: metadataJson.hasAttachments ? 'Yes' : 'No' },
+                { label: 'Copyright', value: metadataJson.copyrightText || '-' },
+                { label: 'Spatial Reference', value: metadataJson.sourceSpatialReference?.wkid || metadataJson.extent?.spatialReference?.wkid || '-' }
+            ];
+
+            infoDiv.innerHTML = info.map(item => `
+                <div class="metadata-card">
+                    <h4>${item.label}</h4>
+                    <div class="value">${escapeHtml(String(item.value))}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('resultsSection').classList.remove('hidden');
+
+            // Fields
+            if (metadataJson.fields && metadataJson.fields.length > 0) {
+                allFields = metadataJson.fields;
+                displayFields(allFields);
+                document.getElementById('fieldsSection').classList.remove('hidden');
+            }
+
+            // Raw JSON
+            document.getElementById('rawJson').value = JSON.stringify(metadataJson, null, 2);
+            document.getElementById('rawSection').classList.remove('hidden');
+        }
+
+        function displayFields(fields) {
+            const tbody = document.getElementById('fieldsBody');
+            document.getElementById('fieldCount').textContent = fields.length;
+
+            tbody.innerHTML = fields.map(field => {
+                const typeClass = getTypeClass(field.type);
+                const typeName = field.type.replace('esriFieldType', '');
+                return `<tr>
+                    <td><strong>${escapeHtml(field.name)}</strong></td>
+                    <td>${escapeHtml(field.alias || field.name)}</td>
+                    <td><span class="type-badge ${typeClass}">${typeName}</span></td>
+                    <td>${field.length || '-'}</td>
+                    <td>${field.nullable ? '✓' : '✗'}</td>
+                    <td>${field.editable ? '✓' : '✗'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function getTypeClass(type) {
+            if (type.includes('String')) return 'string';
+            if (type.includes('Integer') || type.includes('Small')) return 'integer';
+            if (type.includes('Double') || type.includes('Single')) return 'double';
+            if (type.includes('Date')) return 'date';
+            if (type.includes('OID') || type.includes('Global')) return 'oid';
+            return 'string';
+        }
+
+        function filterFields() {
+            const filter = document.getElementById('fieldFilter').value.toLowerCase();
+            const filtered = allFields.filter(f =>
+                f.name.toLowerCase().includes(filter) ||
+                (f.alias && f.alias.toLowerCase().includes(filter))
+            );
+            displayFields(filtered);
+        }
+
+        function copyRaw() {
+            const textarea = document.getElementById('rawJson');
+            textarea.select();
+            document.execCommand('copy');
+            showStatus('Copied to clipboard!', 'success');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
